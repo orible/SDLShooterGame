@@ -1,11 +1,9 @@
-﻿// Game1.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+#ifndef ENGINE
+#define ENGINE
 
 #include <filesystem>
 #include <iostream>
-#include <sstream>
 #include <vector>
-#include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
 
@@ -36,6 +34,16 @@ typedef struct {
 	Box box;
 	float rot;
 } OOBox;
+
+// Transform Simulation Coordinates to Screen Coordinates:
+int transform_to_screen(
+	double sim_x, double sim_y,
+	double* screen_x, double* screen_y,
+	Camera camera, int screen_width, int screen_height) {
+	*screen_x = (sim_x - camera.x) / camera.scale + screen_width / 2;
+	*screen_y = (sim_y - camera.y) / camera.scale + screen_height / 2;
+	return 0;
+}
 
 enum NodeType {
 	NODE,
@@ -74,54 +82,9 @@ public:
 	bool isDead = false;
 	NodeType type = NodeType::NODE;
 	Node* parent;
-	std::vector<Node*> children;
+	std::vector<Node*>children;
 	void SetId(std::string Id) {
 		this->Id = Id;
-	}
-	/// <summary>
-	/// Search for Node in graph if it starts with "/" then search from the Root else search from this nodes children
-	/// Eg: /PlayHud/Overlay == root -> get child PlayHud -> get Child Overlay -> return Overlay
-	/// </summary>
-	/// <param name="query"></param>
-	/// <returns></returns>
-	Node* GetNode(std::string query) {
-		std::vector<std::string> tokens;
-		std::stringstream ss(query);
-		std::string token;
-		while (std::getline(ss, token, '/')) {
-			tokens.push_back(token);
-		}
-		Node* node = NULL;
-		// starts with "/"
-		if (tokens[0] == "") {
-			node = GetRoot();
-		}
-		else {
-			node = this;
-		}
-		if (node == NULL) return NULL;
-		for (int i = 1; i < tokens.size(); i++) {
-			node = node->GetChild(tokens[i]);
-			if (node == NULL)
-				return NULL;
-		}
-		return node;
-	}
-	Node* GetRoot() {
-		Node* node = this;
-		while (node->parent != NULL) {
-			node = node->parent;
-		}
-		return node;
-	}
-	Node* GetChild(std::string Id) {
-		if (this->children.empty()) return NULL;
-		for (int i = 0; i < this->children.size(); i++) {
-			if (this->children[i]->Id == Id) {
-				return this->children[i];
-			}
-		}
-		return NULL;
 	}
 	Node* GetParent(std::string Id) {
 		if (parent == NULL) {
@@ -139,7 +102,7 @@ public:
 		}
 		this->isDead = true;
 	}
-	virtual void DoEvent(input_event_args *args) {
+	virtual void DoEvent(input_event_args* args) {
 		if (this->isDead) return;
 		for (int i = 0; i < this->children.size(); i++) {
 			this->children[i]->DoEvent(args);
@@ -149,7 +112,7 @@ public:
 		if (this->isDead) return;
 		this->parent = parent;
 	}
-	virtual void Step(double dt, Node * parent) {
+	virtual void Step(double dt, Node* parent) {
 		if (this->isDead) return;
 		for (int i = 0; i < this->children.size(); i++) {
 			this->children[i]->Step(dt, this);
@@ -205,106 +168,30 @@ public:
 	virtual Box GetAABounds() {
 		return { pos.x, pos.y, 0, 0 };
 	}
-
-	float ToScreen(
-		double sim_x, double sim_y,
-		double* screen_x, double* screen_y,
-		Camera camera, int screen_width, int screen_height) {
-		*screen_x = (sim_x - camera.x) / camera.scale + screen_width / 2;
-		*screen_y = (sim_y - camera.y) / camera.scale + screen_height / 2;
-		return 0;
-	}
 	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
 		//void Box1 = GetAABounds();
 		//(Node2D*)nodeRoot;
 	}
 	Point GetTransform() {
 		Point point;
-		ToScreen(pos.x, pos.y, &point.x, &point.y, camera, screen.width, screen.height);
+		transform_to_screen(pos.x, pos.y, &point.x, &point.y, camera, screen.width, screen.height);
 	}
+
+	//Node2D(Node* parent) : Node(parent) {}
 };
 
 class Surface : public Node2D {
-public:
+
 	void Step(double dt, Node* parent) {
 		Node2D::Step(dt, this);
 	}
 	void Render(SDL_Renderer* g) {
 		SDL_Rect rect;
-		
+
 		SDL_RenderDrawRect(g, &rect);
 		Node2D::Render(g);
 	}
 };
-
-class TextBox : public Surface {
-	TTF_Font* font = TTF_OpenFont("./assets/fonts/Broken Console Bold.ttf", 24);
-	SDL_Texture* tex;
-	bool dirty = true;
-	std::string text;
-	int fwidth, fheight;
-public:
-	void SetTextF(const char* fmt, ...) {
-		va_list argp;
-		va_start(argp, fmt);
-
-		char* buf = new char[255];
-		int ret = vsnprintf(buf, 255, fmt, argp);
-		std::string text(buf, ret);
-		SetText(text);
-		va_end(argp);
-	}
-	void SetText(std::string text) {
-		this->text = text;
-		this->dirty = true;
-	}
-	bool IsDirty() {
-		return this->dirty;
-	}
-	TextBox(int x, int y, int width, int height) : Surface() {
-		this->pos.x = x;
-		this->pos.y = y;
-	}
-	void Render(SDL_Renderer* g) {
-		if (this->dirty) {
-			if (this->tex != NULL) {
-				SDL_DestroyTexture(this->tex);
-				this->tex = NULL;
-			}
-			SDL_Color textColor = { 255, 255, 255, 0 };
-			SDL_Color bgColor = { 10, 10, 10, 0 };
-			SDL_Surface* surf = TTF_RenderText_Shaded_Wrapped(this->font, this->text.c_str(), textColor, bgColor, 0);
-			if (surf == NULL) {
-				Surface::Render(g);
-				return;
-			}
-			fwidth = surf->w;
-			fheight = surf->h;
-			tex = SDL_CreateTextureFromSurface(g, surf);
-			SDL_FreeSurface(surf);
-			this->dirty = false;
-		}
-		SDL_Rect rect{ pos.x, pos.y, fwidth, fheight };
-		SDL_RenderCopy(g, tex, NULL, &rect);
-		Surface::Render(g);
-	}
-};
-
-class HUD : public Surface {
-public:
-	TextBox* debugInfo = new TextBox(0, 0, 100, 100);
-	TextBox* inputInfo = new TextBox(250, 0, 100, 100);
-	void UpdatePerformance() {
-		debugInfo->SetText("Hello!");
-	}
-
-	void Render(SDL_Renderer* g) {
-		debugInfo->Render(g);
-		inputInfo->Render(g);
-		Surface::Render(g);
-	}
-};
-
 class Sprite : public Node2D {
 	int width;
 	int height;
@@ -321,14 +208,14 @@ public:
 			}
 			// query deets
 			SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-			
+
 			// dump surface out of memory
 			SDL_FreeSurface(surf);
 		}
- 	}
+	}
 	void Step(double dt, Node* parent) {
-		this->rads = cos(CurTime()/1000.f);
-		//printf("%d\n", this->rads);
+		this->rads = cos(CurTime() / 1000.f);
+		printf("%d", this->rads);
 		Node2D::Step(dt, parent);
 	}
 	void Render(SDL_Renderer* g) {
@@ -339,16 +226,20 @@ public:
 		double y = ((Node2D*)this->parent)->pos.y + this->pos.y;
 
 		// compute transient fields
-		SDL_Rect dstrect = { x, y, width, height};
+
+		SDL_Rect dstrect = { x, y, width, height };
 		SDL_RenderCopyEx(g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
 		Node2D::Render(g);
 	}
 	static Sprite* FromDisk(std::string filename) {
-		Sprite * sp = new Sprite();
+		Sprite* sp = new Sprite();
 		sp->filename = filename;
+
+		//std::filesystem::current_path();
 		sp->surf = SDL_LoadBMP(("./assets/" + filename).c_str());
 		return sp;
 	}
+	//Sprite(Node*parent) : Node2D(parent) {}
 };
 
 class Phys2D : public Node2D {
@@ -358,7 +249,6 @@ public:
 	Vec2D acceleration;
 	const float G = 10000;//6.674;
 
-	// compute gravity
 	void do_gravity(double dt) {
 		Vec2D v1 = { 0, -100 };
 		Vec2D v2 = this->pos;
@@ -370,7 +260,7 @@ public:
 		float dist = sqrt(d.x * d.x + d.y * d.y);
 
 		float f = G * m1 * m2 / (dist * dist);
-		
+
 		Vec2D dv = { 0, 0 };
 		if (dist > 0.0f) {
 			dv = { d.x / dist, d.y / dist };
@@ -384,9 +274,8 @@ public:
 		// add to velocity  vector
 		velocity.x += accel1.x * dt;
 		velocity.y += accel1.y * dt;
-	}
 
-	// compute friction
+	}
 	void do_friction(double dt) {
 		// SQRT(v.x^2 + v.y^2)
 		double speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
@@ -398,7 +287,7 @@ public:
 		}
 	}
 
-	void Step(double dt, Node * parent) {
+	void Step(double dt, Node* parent) {
 		double mag = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
 		if (mag > 0) {
 			// break
@@ -408,14 +297,10 @@ public:
 		do_gravity(dt);
 
 		do_friction(dt);
-		
+
 		pos.x += velocity.x * dt;
 		pos.y += velocity.y * dt;
-		((HUD*)this->GetNode("/PlayHUD"))->debugInfo->SetTextF(
-			"Pos: %.1f x %.1f\nVel: %.1f x %.1f\nMag: %f", 
-			pos.x, pos.y, 
-			velocity.x, velocity.y, 
-			mag);
+
 		//velocity.x += acceleration.x * dt;
 		//velocity.y += acceleration.y * dt;
 		Node2D::Step(dt, this);
@@ -446,22 +331,23 @@ public:
 				break;
 			}
 			break;
-		/*case SDL_KEYUP:
-			switch (event.key.keysym.sym) {
-			case SDLK_w:
-				dir.y += 1.0f;  // Stop moving up
-				break;
-			case SDLK_a:
-				dir.x += 1.0f;  // Stop moving left
-				break;
-			case SDLK_s:
-				dir.y -= 1.0f;  // Stop moving down
-				break;
-			case SDLK_d:
-				dir.x -= 1.0f;  // Stop moving right
-				break;
-			}
-			break;*/
+
+			/*case SDL_KEYUP:
+				switch (event.key.keysym.sym) {
+				case SDLK_w:
+					dir.y += 1.0f;  // Stop moving up
+					break;
+				case SDLK_a:
+					dir.x += 1.0f;  // Stop moving left
+					break;
+				case SDLK_s:
+					dir.y -= 1.0f;  // Stop moving down
+					break;
+				case SDLK_d:
+					dir.x -= 1.0f;  // Stop moving right
+					break;
+				}
+				break;*/
 		}
 		//SDL_Text
 		// Normalize the movement vector (to prevent faster diagonal movement)
@@ -470,15 +356,14 @@ public:
 			dir.x /= length;
 			dir.y /= length;
 		}
-		((HUD*)this->GetNode("/PlayHUD"))->inputInfo->SetTextF("W[] S[] A[] D[] SPACE[] %f", length);
 	}
-	
+
 	void DoEvent(input_event_args* args) {
 		computeInputVectors(args->ev);
-		
+
 		const float impulse = 10.0f;
 		float mag = sqrtf(dir.x * dir.x + dir.y * dir.y);
-		
+
 		Vec2D force = dir;
 		if (mag > 0.0001f) {
 			force.x /= mag;
@@ -494,7 +379,7 @@ public:
 		}
 	}
 
-	Actor(): Phys2D() {
+	Actor() : Phys2D() {
 		this->sprite = Sprite::FromDisk("./player.bmp");
 		// this will set the sprite parent and hook it as a child that is auto executed on step, render etc
 		this->AddChild(sprite);
@@ -502,103 +387,4 @@ public:
 	//Sprite * sprite = new Sprite();
 };
 
-/// <summary>
-// World root, must be a Node2D as we need raycast search functions and other helpers
-/// </summary>
-Node2D * nodeRoot = NULL;
-
-int main(int argc, char* args[])
-{
-	SDL_Surface* winSurface = NULL;
-	SDL_Window* window = NULL;
-	SDL_Renderer* renderer = NULL;
-
-	screen.width = 1000;
-	screen.height = 1000;
-
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		return -1;
-	}
-
-	window = SDL_CreateWindow("Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen.width, screen.height, SDL_WINDOW_SHOWN);
-
-	if (!window) {
-		return -1;
-	}
-
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (!renderer) {
-		printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
-		SDL_DestroyWindow(window);
-		SDL_Quit();
-		return 1;
-	}
-
-	TTF_Init();
-
-	nodeRoot = new Surface();
-	nodeRoot->SetId("Root");
-
-	Node* hud = new HUD();
-	hud->SetId("PlayHUD");
-	nodeRoot->AddChild(hud);
-	nodeRoot->GetNode("/PlayHUD");
-
-	long int prev_ticks = SDL_GetPerformanceCounter();
-	long int prev_poll_ticks = SDL_GetPerformanceCounter();
-
-	double dt = 0;
-	double poll_dt = 0;
-	int freq = SDL_GetPerformanceFrequency();
-	bool isRunning = true;
-
-	eventbuf * evbuf = new eventbuf;
-
-	nodeRoot->AddChild(new Actor());
-
-	while (isRunning) {
-		long int ticks = SDL_GetPerformanceCounter();
-		dt = (ticks - prev_ticks) / (double)freq;
-		poll_dt = (ticks - prev_poll_ticks) / (double)freq;
-		
-		// new struct every loop as copied fields is not determinable
-		SDL_Event ivent;
-		if (SDL_PollEvent(&ivent) == 1) {
-			if (ivent.type == SDL_QUIT) {
-				isRunning = false;
-			}
-
-			//evbuf->push_back(ivent);
-			// execute input events
-			nodeRoot->DoEvent(new input_event_args{ evbuf, ivent });
-		}
-		poll_dt = prev_ticks;
-
-		// execute physics
-		nodeRoot->Step(dt, NULL);
-
-		// blank frame
-		//SDL_FillRect(winSurface, NULL, SDL_MapRGB(winSurface->format, 255, 255, 255));
-
-		SDL_RenderClear(renderer);
-
-		// render back to front
-		nodeRoot->Render(renderer);
-		
-		SDL_RenderPresent(renderer);
-		//SDL_UpdateWindowSurface(window);
-
-		//printf("tick => %f\n", dt);
-
-		prev_ticks = ticks;
-		SDL_Delay(16);
-	}
-
-	printf("END\n");
-	system("pause");
-
-	SDL_DestroyWindow(window);
-	SDL_Quit();
-
-	return 0;
-}
+#endif
