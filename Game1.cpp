@@ -428,7 +428,7 @@ class Actor : public Phys2D {
 
 public:
 	void computeInputVectors(SDL_Event event) {
-		dir = { 0, 0 };
+		dir = {0, 0};
 		switch (event.type) {
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
@@ -446,8 +446,8 @@ public:
 				break;
 			}
 			break;
-		/*case SDL_KEYUP:
-			switch (event.key.keysym.sym) {
+		case SDL_KEYUP:
+			/*switch (event.key.keysym.sym) {
 			case SDLK_w:
 				dir.y += 1.0f;  // Stop moving up
 				break;
@@ -461,7 +461,9 @@ public:
 				dir.x -= 1.0f;  // Stop moving right
 				break;
 			}
-			break;*/
+			break;/**/
+		default:
+			return;
 		}
 		//SDL_Text
 		// Normalize the movement vector (to prevent faster diagonal movement)
@@ -470,6 +472,7 @@ public:
 			dir.x /= length;
 			dir.y /= length;
 		}
+		printf("%f\n", length);
 		((HUD*)this->GetNode("/PlayHUD"))->inputInfo->SetTextF("W[] S[] A[] D[] SPACE[] %f", length);
 	}
 	
