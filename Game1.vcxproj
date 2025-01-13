@@ -134,6 +134,7 @@
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="Game1.cpp" />
     <ClCompile Include="hud.cpp" />
+    <ClCompile Include="surfacedrawable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -151,6 +152,7 @@
     <ClInclude Include="controls.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="hud.h" />
+    <ClInclude Include="surfacedrawable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

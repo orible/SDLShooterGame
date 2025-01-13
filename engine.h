@@ -79,6 +79,8 @@ public:
 	std::vector<Node*> children;
 	int GetUID();
 	void SetId(std::string Id);
+	void AddChild(Node* node);
+	void SetParent(Node* parent);
 	/// <summary>
 	/// Search for Node in graph if it starts with "/" then search from the Root else search from this nodes children
 	/// Eg: /PlayHud/Overlay == root -> get child PlayHud -> get Child Overlay -> return Overlay
@@ -91,10 +93,9 @@ public:
 	Node* GetParent(std::string Id);
 	virtual void Dispose();
 	virtual void DoEvent(input_event_args* args);
-	void SetParent(Node* parent);
 	virtual void Step(double dt, Node* parent);
 	virtual void Render(SDL_Renderer* g);
-	void AddChild(Node* node);
+
 	Node(Node* parent);
 	Node();
 };
@@ -122,25 +123,6 @@ class Surface : public Node2D {
 public:
 	void Step(double dt, Node* parent);
 	void Render(SDL_Renderer* g);
-};
-
-class DrawableSurface : public Surface {
-public:
-	struct TexPoint {
-		int x;
-		int y;
-	};
-	Vec2D last;
-	Vec2D tail;
-	bool isDrawing = false;
-	SDL_Texture* tex;
-	std::vector<TexPoint> queue;
-	int totalQueue = 0;
-	void constructTexture(SDL_Renderer* g);
-	void DoEvent(input_event_args* args);
-	void computeInputVectors(SDL_Event event);
-	void DrawThickLine(SDL_Renderer* renderer, float x1, float y1, float x2, float y2, int thickness);
-	void Render(SDL_Renderer* g) ;
 };
 
 class Sprite : public Node2D {

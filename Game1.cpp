@@ -11,6 +11,7 @@
 #include "engine.h"
 #include "actor.h"
 #include "hud.h"
+#include "surfacedrawable.h"
 
 /// <summary>
 // World root, must be a Node2D as we need raycast search functions and other helpers

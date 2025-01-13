@@ -1,6 +1,7 @@
 #include "hud.h"
 #include <SDL.h>
 #include "engine.h"
+
 void HUD::UpdatePerformance() {
 	debugInfo->SetText("Hello!");
 }

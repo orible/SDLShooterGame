@@ -33,6 +33,9 @@
     <ClCompile Include="hud.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="surfacedrawable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -53,6 +56,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="hud.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="surfacedrawable.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
