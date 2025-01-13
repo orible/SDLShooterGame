@@ -21,6 +21,18 @@
     <ClCompile Include="Game1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="controls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -29,5 +41,19 @@
     <Image Include="assets\player.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="engine.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="controls.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="actor.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hud.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

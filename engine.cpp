@@ -1,145 +1,124 @@
-#ifndef ENGINE
-#define ENGINE
+// Game1.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
 
 #include <filesystem>
 #include <iostream>
+#include <sstream>
 #include <vector>
+#include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include "engine.h"
+#include "hud.h"
 
-typedef struct {
-	double x, y;        // Center of the viewport in simulation space
-	double scale;       // Scale factor: simulation units per screen pixel
-} Camera;
-
-typedef struct {
-	int width, height;
-} Screen;
-
-typedef struct {
-	double x, y;
-} Point;
-
-typedef struct {
-	double x, y;
-} Vec2D;
-
-typedef struct {
-	Vec2D pos;
-	int width;
-	int height;
-} Box;
-
-typedef struct {
-	Box box;
-	float rot;
-} OOBox;
-
-// Transform Simulation Coordinates to Screen Coordinates:
-int transform_to_screen(
-	double sim_x, double sim_y,
-	double* screen_x, double* screen_y,
-	Camera camera, int screen_width, int screen_height) {
-	*screen_x = (sim_x - camera.x) / camera.scale + screen_width / 2;
-	*screen_y = (sim_y - camera.y) / camera.scale + screen_height / 2;
-	return 0;
-}
-
-enum NodeType {
-	NODE,
-	NODE2D,
-	SURFACE,
-	SPRITE,
-	PHYS,
-};
-
-typedef struct {
-	SDL_Event event;
-	long int timestamp;
-} input_event;
-typedef std::vector<SDL_Event> eventbuf;
-
-typedef struct {
-	eventbuf* buf;
-	SDL_Event ev;
-	Vec2D dir;
-} input_event_args;
-
-Camera camera;
-Screen screen;
-long int uuid = 0;
-
-int GetUID() {
+int Node::GetUID() {
 	return uuid++;
 }
 
-class Node;
 std::vector<Node*> gctable;
-class Node {
-public:
-	int uuid;
-	std::string Id;
-	bool isDead = false;
-	NodeType type = NodeType::NODE;
-	Node* parent;
-	std::vector<Node*>children;
-	void SetId(std::string Id) {
-		this->Id = Id;
+void Node::SetId(std::string Id) {
+	this->Id = Id;
+}
+
+/// <summary>
+	/// Search for Node in graph if it starts with "/" then search from the Root else search from this nodes children
+	/// Eg: /PlayHud/Overlay == root -> get child PlayHud -> get Child Overlay -> return Overlay
+	/// </summary>
+	/// <param name="query"></param>
+	/// <returns></returns>
+Node* Node::GetNode(std::string query) {
+	std::vector<std::string> tokens;
+	std::stringstream ss(query);
+	std::string token;
+	while (std::getline(ss, token, '/')) {
+		tokens.push_back(token);
 	}
-	Node* GetParent(std::string Id) {
-		if (parent == NULL) {
+	Node* node = NULL;
+	// starts with "/"
+	if (tokens[0] == "") {
+		node = GetRoot();
+	}
+	else {
+		node = this;
+	}
+	if (node == NULL) return NULL;
+	for (int i = 1; i < tokens.size(); i++) {
+		node = node->GetChild(tokens[i]);
+		if (node == NULL)
 			return NULL;
-		}
-		if (parent->Id == Id) {
-			return parent;
-		}
-		parent->GetParent(Id);
 	}
-	virtual void Dispose() {
-		if (this->isDead) return;
-		for (int i = 0; i < this->children.size(); i++) {
-			this->children[i]->Dispose();
-		}
-		this->isDead = true;
+	return node;
+}
+Node* Node::GetRoot() {
+	Node* node = this;
+	while (node->parent != NULL) {
+		node = node->parent;
 	}
-	virtual void DoEvent(input_event_args* args) {
-		if (this->isDead) return;
-		for (int i = 0; i < this->children.size(); i++) {
-			this->children[i]->DoEvent(args);
+	return node;
+}
+Node* Node::GetChild(std::string Id) {
+	if (this->children.empty()) return NULL;
+	for (int i = 0; i < this->children.size(); i++) {
+		if (this->children[i]->Id == Id) {
+			return this->children[i];
 		}
 	}
-	void SetParent(Node* parent) {
-		if (this->isDead) return;
-		this->parent = parent;
+	return NULL;
+}
+Node* Node::GetParent(std::string Id) {
+	if (parent == NULL) {
+		return NULL;
 	}
-	virtual void Step(double dt, Node* parent) {
-		if (this->isDead) return;
-		for (int i = 0; i < this->children.size(); i++) {
-			this->children[i]->Step(dt, this);
-		}
+	if (parent->Id == Id) {
+		return parent;
 	}
-	virtual void Render(SDL_Renderer* g) {
-		if (this->isDead) return;
-		for (int i = 0; i < this->children.size(); i++) {
-			this->children[i]->Render(g);
-		}
+	parent->GetParent(Id);
+}
+void Node::Dispose() {
+	if (this->isDead) return;
+	for (int i = 0; i < this->children.size(); i++) {
+		this->children[i]->Dispose();
 	}
-	void AddChild(Node* node) {
-		if (this->isDead) return;
-		node->parent = this;
-		this->children.push_back(node);
+	this->isDead = true;
+}
+void Node::DoEvent(input_event_args* args) {
+	if (this->isDead) return;
+	for (int i = 0; i < this->children.size(); i++) {
+		this->children[i]->DoEvent(args);
 	}
-	Node(Node* parent) {
-		this->uuid = GetUID();
-		this->parent = parent;
-		gctable.push_back(this);
+}
+void Node::SetParent(Node* parent) {
+	if (this->isDead) return;
+	this->parent = parent;
+}
+void Node::Step(double dt, Node* parent) {
+	if (this->isDead) return;
+	for (int i = 0; i < this->children.size(); i++) {
+		this->children[i]->Step(dt, this);
 	}
-	Node() {
-		this->uuid = GetUID();
-		this->parent = NULL;
-		gctable.push_back(this);
+}
+void Node::Render(SDL_Renderer* g) {
+	if (this->isDead) return;
+	for (int i = 0; i < this->children.size(); i++) {
+		this->children[i]->Render(g);
 	}
-};
+}
+void Node::AddChild(Node* node) {
+	if (this->isDead) return;
+	node->parent = this;
+	this->children.push_back(node);
+}
+Node::Node(Node* parent) {
+	this->uuid = GetUID();
+	this->parent = parent;
+	gctable.push_back(this);
+}
+Node::Node() {
+	this->uuid = GetUID();
+	this->parent = NULL;
+	gctable.push_back(this);
+}
+
 
 void dumpError() {
 	printf("SDL_GetError: %s\n", SDL_GetError());
@@ -147,244 +126,265 @@ void dumpError() {
 	SDL_Quit();
 }
 
-class Node2D : public Node {
-public:
-	float rads;
-	Vec2D pos;
-	long int CurTime() {
-		return SDL_GetTicks();
+long int Node2D::CurTime() {
+	return SDL_GetTicks();
+}
+
+Vec2D Node2D::RotatePoint(Vec2D p, float a) {
+	float cosa = cos(a);
+	float sina = sin(a);
+	return {
+		p.x * cosa - p.y * sina,
+		p.x * sina + p.y * cosa,
+	};
+}
+	
+OOBox Node2D::GetOOBounds() {
+	return OOBox{ GetAABounds(), this->rads };
+}
+Box Node2D::GetAABounds() {
+	return { pos.x, pos.y, 0, 0 };
+}
+
+float Node2D::ToScreen(
+	double sim_x, double sim_y,
+	double* screen_x, double* screen_y,
+	Camera camera, int screen_width, int screen_height) {
+	*screen_x = (sim_x - camera.x) / camera.scale + screen_width / 2;
+	*screen_y = (sim_y - camera.y) / camera.scale + screen_height / 2;
+	return 0;
+}
+void Node2D::RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
+	//void Box1 = GetAABounds();
+	//(Node2D*)nodeRoot;
+}
+Point Node2D::GetTransform() {
+	Point point;
+	//ToScreen(pos.x, pos.y, &point.x, &point.y, camera, screen.width, screen.height);
+	return point;
+}
+
+void Surface::Step(double dt, Node* parent) {
+	Node2D::Step(dt, this);
+}
+void Surface::Render(SDL_Renderer* g) {
+	SDL_Rect rect;
+
+	SDL_RenderDrawRect(g, &rect);
+	Node2D::Render(g);
+}
+
+void DrawableSurface::constructTexture(SDL_Renderer* g) {
+	if (tex == NULL) {
+		tex = SDL_CreateTexture(
+			g, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+			1000, 1000);
+		SDL_SetRenderTarget(g, tex);
+		SDL_SetRenderDrawColor(g, 255, 0, 0, 0); // Clear to white
+		SDL_Rect rect{ 0, 0, 1000, 1000 };
+		SDL_RenderFillRect(g, &rect);
+		SDL_SetRenderTarget(g, NULL);
 	}
-	Vec2D RotatePoint(Vec2D p, float a) {
-		float cosa = cos(a);
-		float sina = sin(a);
-		return {
-			p.x * cosa - p.y * sina,
-			p.x * sina + p.y * cosa,
-		};
+}
+void DrawableSurface::DoEvent(input_event_args* args) {
+	computeInputVectors(args->ev);
+	Surface::DoEvent(args);
+}
+void DrawableSurface::computeInputVectors(SDL_Event event) {
+	switch (event.type) {
+	case SDL_MOUSEBUTTONDOWN: {
+		if (event.button.button = SDL_BUTTON_LEFT) {
+			isDrawing = true;
+			last.x = event.button.x;
+			last.y = event.button.y;
+			((HUD*)this->GetNode("/PlayHUD"))->drawSurfaceInfo->SetTextF(
+				"SDL_MOUSEBUTTONDOWN: %d", totalQueue);
+		}
+		totalQueue++;
+		//TexPoint pt{ last.x,last.y };
+		//queue.push_back(pt);
+	}break;
+	case SDL_MOUSEBUTTONUP:
+		isDrawing = false;
+		break;
+	case SDL_MOUSEMOTION:
+		if (isDrawing) {
+			int x = event.motion.x;
+			int y = event.motion.y;
+			TexPoint pt{ x, y };
+			queue.push_back(pt);
+			totalQueue++;
+			((HUD*)this->GetNode("/PlayHUD"))->drawSurfaceInfo->SetTextF(
+				"SDL_MOUSEMOTION: %d", totalQueue);
+		}
+		break;
 	}
-	virtual OOBox GetOOBounds() {
-		return OOBox{ GetAABounds(), this->rads };
-	}
-	virtual Box GetAABounds() {
-		return { pos.x, pos.y, 0, 0 };
-	}
-	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
-		//void Box1 = GetAABounds();
-		//(Node2D*)nodeRoot;
-	}
-	Point GetTransform() {
-		Point point;
-		transform_to_screen(pos.x, pos.y, &point.x, &point.y, camera, screen.width, screen.height);
+}
+void DrawableSurface::DrawThickLine(SDL_Renderer* renderer, float x1, float y1, float x2, float y2, int thickness) {
+	// Calculate line length and angle
+	float dx = x2 - x1;
+	float dy = y2 - y1;
+	float length = sqrtf(dx * dx + dy * dy);
+	float angle = atan2f(dy, dx) * (180.0f / M_PI); // Convert radians to degrees
+
+	// Create a temporary texture for the line
+	SDL_Texture* lineTexture = SDL_CreateTexture(
+		renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+		(int)length, thickness
+	);
+
+	if (lineTexture == NULL) {
+		return;
 	}
 
-	//Node2D(Node* parent) : Node(parent) {}
-};
+	// Set the texture as the render target
+	SDL_SetRenderTarget(renderer, lineTexture);
 
-class Surface : public Node2D {
+	// Clear the texture (make it transparent)
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+	SDL_RenderClear(renderer);
 
-	void Step(double dt, Node* parent) {
-		Node2D::Step(dt, this);
-	}
-	void Render(SDL_Renderer* g) {
-		SDL_Rect rect;
+	// Draw the rectangle (the thick line)
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
+	SDL_Rect rect = { 0, 0, (int)length, thickness };
+	SDL_RenderFillRect(renderer, &rect);
 
-		SDL_RenderDrawRect(g, &rect);
-		Node2D::Render(g);
-	}
-};
-class Sprite : public Node2D {
-	int width;
-	int height;
-	SDL_Surface* surf;
-	SDL_Texture* texture;
-	std::string filename;
-public:
-	void constructTexture(SDL_Renderer* g) {
-		if (surf != NULL && texture == NULL) {
-			texture = SDL_CreateTextureFromSurface(g, this->surf);
-			if (texture == NULL) {
-				dumpError();
-				return;
+	// Reset the render target to the default
+	SDL_SetRenderTarget(renderer, nullptr);
+
+	// Define the destination rectangle on the screen
+	SDL_Rect dstRect = { (int)x1, (int)y1, (int)length, thickness };
+
+	// Render the line texture, rotated
+	SDL_RenderCopyEx(renderer, lineTexture, nullptr, &dstRect, angle, nullptr, SDL_FLIP_NONE);
+
+	// Cleanup
+	SDL_DestroyTexture(lineTexture);
+}
+void DrawableSurface::Render(SDL_Renderer* g) {
+	constructTexture(g);
+
+	bool isDirty = queue.size() > 0;
+
+	if (isDirty) {
+		// event queue
+		SDL_SetRenderDrawColor(g, 255, 255, 255, 0);
+		SDL_SetRenderTarget(g, tex);
+		if (queue.size() < 2) {
+			SDL_RenderDrawPoint(g, queue[0].x, queue[0].y);
+		}
+		else {
+			Vec2D lx = { tail.x, tail.y };
+			for (int i = 0; i < queue.size(); i++) {
+				SDL_RenderDrawLine(g, lx.x, lx.y, queue[i].x, queue[i].y);
+				//SDL_RenderDrawPoint(g, queue[i].x, queue[i].y);
+				lx = { (double)queue[i].x, (double)queue[i].y };
 			}
-			// query deets
-			SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-
-			// dump surface out of memory
-			SDL_FreeSurface(surf);
+			tail = lx;
+			queue.clear();
 		}
+		SDL_SetRenderTarget(g, NULL);
 	}
-	void Step(double dt, Node* parent) {
-		this->rads = cos(CurTime() / 1000.f);
-		printf("%d", this->rads);
-		Node2D::Step(dt, parent);
-	}
-	void Render(SDL_Renderer* g) {
-		// assert texture is constructed all lazy like probably boils to EQ idk, TODO: inspect the assemblr
-		constructTexture(g);
 
-		double x = ((Node2D*)this->parent)->pos.x + this->pos.x;
-		double y = ((Node2D*)this->parent)->pos.y + this->pos.y;
+	SDL_RenderCopy(g, tex, NULL, NULL);
+	Surface::Render(g);
+}
 
-		// compute transient fields
-
-		SDL_Rect dstrect = { x, y, width, height };
-		SDL_RenderCopyEx(g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
-		Node2D::Render(g);
-	}
-	static Sprite* FromDisk(std::string filename) {
-		Sprite* sp = new Sprite();
-		sp->filename = filename;
-
-		//std::filesystem::current_path();
-		sp->surf = SDL_LoadBMP(("./assets/" + filename).c_str());
-		return sp;
-	}
-	//Sprite(Node*parent) : Node2D(parent) {}
-};
-
-class Phys2D : public Node2D {
-public:
-	double friction;
-	Vec2D velocity;
-	Vec2D acceleration;
-	const float G = 10000;//6.674;
-
-	void do_gravity(double dt) {
-		Vec2D v1 = { 0, -100 };
-		Vec2D v2 = this->pos;
-		Vec2D d = { v2.x - v1.x, v2.y - v1.y };
-
-		float m1 = 10;
-		float m2 = 10;
-
-		float dist = sqrt(d.x * d.x + d.y * d.y);
-
-		float f = G * m1 * m2 / (dist * dist);
-
-		Vec2D dv = { 0, 0 };
-		if (dist > 0.0f) {
-			dv = { d.x / dist, d.y / dist };
+void Sprite::constructTexture(SDL_Renderer* g) {
+	if (surf != NULL && texture == NULL) {
+		texture = SDL_CreateTextureFromSurface(g, this->surf);
+		if (texture == NULL) {
+			dumpError();
+			return;
 		}
+		// query deets
+		SDL_QueryTexture(texture, NULL, NULL, &width, &height);
 
-		Vec2D Fv = { f * dv.x, f * dv.y };
-
-		// accelleration
-		Vec2D accel1 = { Fv.x / m1, Fv.y / m1 };
-
-		// add to velocity  vector
-		velocity.x += accel1.x * dt;
-		velocity.y += accel1.y * dt;
-
+		// dump surface out of memory
+		SDL_FreeSurface(surf);
 	}
-	void do_friction(double dt) {
-		// SQRT(v.x^2 + v.y^2)
-		double speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-		if (speed > 0) {
-			double decel = friction * 9.8 * dt;
-			double new_speed = fmax(0, speed - decel);
-			velocity.x *= new_speed / speed;
-			velocity.y *= new_speed / speed;
-		}
-	}
+}
+void Sprite::Step(double dt, Node* parent) {
+	this->rads = cos(CurTime() / 1000.f);
+	//printf("%d\n", this->rads);
+	Node2D::Step(dt, parent);
+}
+void Sprite::Render(SDL_Renderer* g) {
+	// assert texture is constructed all lazy like probably boils to EQ idk, TODO: inspect the assemblr
+	constructTexture(g);
 
-	void Step(double dt, Node* parent) {
-		double mag = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-		if (mag > 0) {
-			// break
-			int a = 0;
-		}
+	double x = ((Node2D*)this->parent)->pos.x + this->pos.x;
+	double y = ((Node2D*)this->parent)->pos.y + this->pos.y;
 
-		do_gravity(dt);
+	// compute transient fields
+	SDL_Rect dstrect = { x, y, width, height };
+	SDL_RenderCopyEx(g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
+	Node2D::Render(g);
+}
+Sprite* Sprite::FromDisk(std::string filename) {
+	Sprite* sp = new Sprite();
+	sp->filename = filename;
+	sp->surf = SDL_LoadBMP(("./assets/" + filename).c_str());
+	return sp;
+}
+void Phys2D::do_gravity(double dt) {
+	Vec2D v1 = { 0, -100 };
+	Vec2D v2 = this->pos;
+	Vec2D d = { v2.x - v1.x, v2.y - v1.y };
 
-		do_friction(dt);
+	float m1 = 10;
+	float m2 = 10;
 
-		pos.x += velocity.x * dt;
-		pos.y += velocity.y * dt;
+	float dist = sqrt(d.x * d.x + d.y * d.y);
 
-		//velocity.x += acceleration.x * dt;
-		//velocity.y += acceleration.y * dt;
-		Node2D::Step(dt, this);
-	}
-};
+	float f = G * m1 * m2 / (dist * dist);
 
-class Actor : public Phys2D {
-	Sprite* sprite;
-	Vec2D dir = { 0, 0 };
-
-public:
-	void computeInputVectors(SDL_Event event) {
-		dir = { 0, 0 };
-		switch (event.type) {
-		case SDL_KEYDOWN:
-			switch (event.key.keysym.sym) {
-			case SDLK_w:
-				dir.y -= 1.0f;  // Move up
-				break;
-			case SDLK_a:
-				dir.x -= 1.0f;  // Move left
-				break;
-			case SDLK_s:
-				dir.y += 1.0f;  // Move down
-				break;
-			case SDLK_d:
-				dir.x += 1.0f;  // Move right
-				break;
-			}
-			break;
-
-			/*case SDL_KEYUP:
-				switch (event.key.keysym.sym) {
-				case SDLK_w:
-					dir.y += 1.0f;  // Stop moving up
-					break;
-				case SDLK_a:
-					dir.x += 1.0f;  // Stop moving left
-					break;
-				case SDLK_s:
-					dir.y -= 1.0f;  // Stop moving down
-					break;
-				case SDLK_d:
-					dir.x -= 1.0f;  // Stop moving right
-					break;
-				}
-				break;*/
-		}
-		//SDL_Text
-		// Normalize the movement vector (to prevent faster diagonal movement)
-		float length = sqrtf(dir.x * dir.x + dir.y * dir.y);
-		if (length > 0.0f) {
-			dir.x /= length;
-			dir.y /= length;
-		}
+	Vec2D dv = { 0, 0 };
+	if (dist > 0.0f) {
+		dv = { d.x / dist, d.y / dist };
 	}
 
-	void DoEvent(input_event_args* args) {
-		computeInputVectors(args->ev);
+	Vec2D Fv = { f * dv.x, f * dv.y };
 
-		const float impulse = 10.0f;
-		float mag = sqrtf(dir.x * dir.x + dir.y * dir.y);
+	// accelleration
+	Vec2D accel1 = { Fv.x / m1, Fv.y / m1 };
 
-		Vec2D force = dir;
-		if (mag > 0.0001f) {
-			force.x /= mag;
-			force.y /= mag;
-			// add force
-			this->velocity.x += force.x * impulse;
-			this->velocity.y += force.y * impulse;
-		}
+	// add to velocity  vector
+	velocity.x += accel1.x * dt;
+	velocity.y += accel1.y * dt;
+}
 
-		if (mag > 0) {
-			// spin
-			this->rads + 1 * mag;
-		}
+// compute friction
+void Phys2D::do_friction(double dt) {
+	// SQRT(v.x^2 + v.y^2)
+	double speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+	if (speed > 0) {
+		double decel = friction * 9.8 * dt;
+		double new_speed = fmax(0, speed - decel);
+		velocity.x *= new_speed / speed;
+		velocity.y *= new_speed / speed;
+	}
+}
+
+void Phys2D::Step(double dt, Node* parent) {
+	double mag = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+	if (mag > 0) {
+		// break
+		int a = 0;
 	}
 
-	Actor() : Phys2D() {
-		this->sprite = Sprite::FromDisk("./player.bmp");
-		// this will set the sprite parent and hook it as a child that is auto executed on step, render etc
-		this->AddChild(sprite);
-	}
-	//Sprite * sprite = new Sprite();
-};
+	do_gravity(dt);
 
-#endif
+	do_friction(dt);
+
+	pos.x += velocity.x * dt;
+	pos.y += velocity.y * dt;
+	((HUD*)this->GetNode("/PlayHUD"))->debugInfo->SetTextF(
+		"Pos: %.1f x %.1f\nVel: %.1f x %.1f\nMag: %f",
+		pos.x, pos.y,
+		velocity.x, velocity.y,
+		mag);
+	//velocity.x += acceleration.x * dt;
+	//velocity.y += acceleration.y * dt;
+	Node2D::Step(dt, this);
+}
