@@ -17,6 +17,10 @@ void TextBox::SetText(std::string text) {
 bool TextBox::IsDirty() {
 	return this->dirty;
 }
+TextBox::TextBox(int align) : Surface() {
+	this->localPos.x = 0;
+	this->localPos.y = 470;
+}
 TextBox::TextBox(int x, int y, int width, int height) : Surface() {
 	this->localPos.x = x;
 	this->localPos.y = y;

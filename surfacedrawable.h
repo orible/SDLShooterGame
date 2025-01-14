@@ -15,6 +15,7 @@ public:
 	SDL_Texture* tex;
 	std::vector<TexPoint> queue;
 	int totalQueue = 0;
+	void Add(Vec2D p);
 	void constructTexture(SDL_Renderer* g);
 	void DoEvent(input_event_args* args);
 	void computeInputVectors(SDL_Event event);

@@ -2,13 +2,18 @@
 #include "engine.h"
 #include "hud.h"
 
+void DrawableSurface::Add(Vec2D p)
+{
+	this->queue.push_back(TexPoint{ (int)p.x, (int)p.y });
+}
+
 void DrawableSurface::constructTexture(SDL_Renderer* g) {
 	if (tex == NULL) {
 		tex = SDL_CreateTexture(
 			g, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
 			1000, 1000);
 		SDL_SetRenderTarget(g, tex);
-		SDL_SetRenderDrawColor(g, 255, 0, 0, 0); // Clear to white
+		SDL_SetRenderDrawColor(g, 0, 0, 0, 0); // Clear
 		SDL_Rect rect{ 0, 0, 1000, 1000 };
 		SDL_RenderFillRect(g, &rect);
 		SDL_SetRenderTarget(g, NULL);
@@ -16,7 +21,7 @@ void DrawableSurface::constructTexture(SDL_Renderer* g) {
 }
 
 void DrawableSurface::DoEvent(input_event_args* args) {
-	computeInputVectors(args->ev);
+	//computeInputVectors(args->ev);
 	Surface::DoEvent(args);
 }
 
@@ -93,6 +98,7 @@ void DrawableSurface::DrawThickLine(SDL_Renderer* renderer, float x1, float y1, 
 }
 void DrawableSurface::Render(SDL_Renderer* g) {
 	constructTexture(g);
+	GetGlobalPositionTransform();
 
 	bool isDirty = queue.size() > 0;
 
@@ -115,7 +121,14 @@ void DrawableSurface::Render(SDL_Renderer* g) {
 		}
 		SDL_SetRenderTarget(g, NULL);
 	}
-
-	SDL_RenderCopy(g, tex, NULL, NULL);
+	
+	SDL_Rect dest = { 
+		this->globalPos.x, 
+		this->globalPos.y, 
+		1000 + this->globalPos.x, 
+		1000 + this->globalPos.y
+	};
+	SDL_Rect src = { 0, 0, 1000, 1000 };
+	SDL_RenderCopy(g, tex, &src, &dest);
 	Surface::Render(g);
 }

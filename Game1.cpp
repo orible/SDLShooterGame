@@ -121,6 +121,8 @@ int main(int argc, char* args[])
 		SDL_RenderPresent(renderer);
 		//SDL_UpdateWindowSurface(window);
 
+		// delay betwween last frame and now
+		((HUD*)hud)->perfInfo->SetTextF("%.2f", 1000 / (dt * 1000));
 		//printf("tick => %f\n", dt);
 
 		prev_ticks = ticks;

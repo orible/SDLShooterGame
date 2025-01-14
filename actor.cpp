@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include "engine.h"
 #include "hud.h"
+#include "surfacedrawable.h"
+
 bool Actor::computeInputVectors(SDL_Event event) {
 	switch (event.type) {
 	case SDL_KEYDOWN:
@@ -90,6 +92,8 @@ void Actor::Step(double dt, Node* parent) {
 		this->velocity.x += dir.x * impulse;
 		this->velocity.y += dir.y * impulse;
 	}
+
+	((DrawableSurface*)this->GetNode("/DrawableMap"))->Add(this->globalPos);
 
 	/*if (mag > 0.0001f) {
 		Vec2D force = dirn;

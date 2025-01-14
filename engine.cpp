@@ -296,6 +296,7 @@ void Phys2D::do_friction(double dt) {
 }
 
 void Phys2D::Step(double dt, Node* parent) {
+	GetGlobalPositionTransform();
 	double mag = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
 	if (mag > 0) {
 		// break

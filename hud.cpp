@@ -8,12 +8,14 @@ void HUD::UpdatePerformance() {
 
 HUD::HUD() : Surface()
 {
+	//this->AddChild(this->perfInfo);
 	this->AddChild(this->debugInfo);
 	this->AddChild(this->inputInfo);
 	this->AddChild(this->drawSurfaceInfo);
 }
 
 void HUD::Render(SDL_Renderer* g) {
+	perfInfo->Render(g);
 	//debugInfo->Render(g);
 	//inputInfo->Render(g);
 	//drawSurfaceInfo->Render(g);
