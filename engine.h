@@ -26,6 +26,12 @@ typedef struct {
 
 typedef struct Vec2D {
 	double x, y;
+	Vec2D operator + (Vec2D a) {
+		return { this->x + a.x, this->y + a.y };
+	}
+	Vec2D operator *(Vec2D a) {
+		return { this->x * a.x, this->y * a.y };
+	}
 	float length() const {
 		return sqrt(x * x + y * y);
 	}
@@ -73,6 +79,7 @@ class Node {
 public:
 	int uuid;
 	std::string Id;
+	std::string Type;
 	bool isDead = false;
 	NodeType type = NodeType::NODE;
 	Node* parent;
@@ -110,13 +117,14 @@ public:
 	Vec2D RotatePoint(Vec2D p, float a);
 	virtual OOBox GetOOBounds();
 	virtual Box GetAABounds();
-
+	void GetParentTransform();
 	float ToScreen(
 		double sim_x, double sim_y,
 		double* screen_x, double* screen_y,
 		Camera camera, int screen_width, int screen_height);
 	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir);
-	Point GetTransform();
+	Vec2D GetTransform();
+	Node2D();
 };
 
 class Surface : public Node2D {

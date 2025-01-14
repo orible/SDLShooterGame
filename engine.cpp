@@ -119,7 +119,6 @@ Node::Node() {
 	gctable.push_back(this);
 }
 
-
 void dumpError() {
 	printf("SDL_GetError: %s\n", SDL_GetError());
 	//SDL_DestroyWindow(window);
@@ -146,6 +145,21 @@ Box Node2D::GetAABounds() {
 	return { pos.x, pos.y, 0, 0 };
 }
 
+// get parent transform matrix graph
+void Node2D::GetParentTransform()
+{
+	Vec2D transform;
+	Node* node = this;
+
+	// traverse node graph backwards and build a transform list
+	while (node->parent != NULL) {
+		if (node->Id == "NODE2D") {
+			transform = transform + ((Node2D*)node)->GetTransform();
+		}
+		node = node->parent;
+	}
+}
+
 float Node2D::ToScreen(
 	double sim_x, double sim_y,
 	double* screen_x, double* screen_y,
@@ -154,14 +168,20 @@ float Node2D::ToScreen(
 	*screen_y = (sim_y - camera.y) / camera.scale + screen_height / 2;
 	return 0;
 }
+
 void Node2D::RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
 	//void Box1 = GetAABounds();
 	//(Node2D*)nodeRoot;
 }
-Point Node2D::GetTransform() {
-	Point point;
+
+Vec2D Node2D::GetTransform() {
 	//ToScreen(pos.x, pos.y, &point.x, &point.y, camera, screen.width, screen.height);
-	return point;
+	return this->pos;
+}
+
+Node2D::Node2D(): Node()
+{
+	this->Type == "NODE2D";
 }
 
 void Surface::Step(double dt, Node* parent) {

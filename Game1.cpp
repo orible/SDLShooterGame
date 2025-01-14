@@ -30,8 +30,8 @@ int main(int argc, char* args[])
 	SDL_Window* window = NULL;
 	SDL_Renderer* renderer = NULL;
 
-	screen.width = 1000;
-	screen.height = 1000;
+	screen.width = 640;
+	screen.height = 480;
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		return -1;
@@ -58,6 +58,8 @@ int main(int argc, char* args[])
 		SDL_Quit();
 		return 1;
 	}
+
+	SDL_RenderSetLogicalSize(renderer, 640, 480);
 
 	TTF_Init();
 
