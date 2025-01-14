@@ -79,9 +79,13 @@ int main(int argc, char* args[])
 
 	long int prev_ticks = SDL_GetPerformanceCounter();
 	long int prev_poll_ticks = SDL_GetPerformanceCounter();
+	long int prev_step_ticks = SDL_GetPerformanceCounter();
+	long int prev_step_start_ticks = 0;
 
 	double dt = 0;
 	double poll_dt = 0;
+	double step_dt = 0;
+	
 	int freq = SDL_GetPerformanceFrequency();
 	bool isRunning = true;
 
@@ -93,7 +97,10 @@ int main(int argc, char* args[])
 		long int ticks = SDL_GetPerformanceCounter();
 		dt = (ticks - prev_ticks) / (double)freq;
 		poll_dt = (ticks - prev_poll_ticks) / (double)freq;
-		
+		step_dt = (ticks - prev_step_ticks) / (double)freq;
+		((HUD*)hud)->perfInfo->SetTextF("fps: %.2f\ntick: %.2f",
+			1000 / (dt * 1000),
+			1000 / ((prev_step_start_ticks - step_dt) / (double)freq * 1000));
 		// new struct every loop as copied fields is not determinable
 		SDL_Event ivent;
 		while (SDL_PollEvent(&ivent) != 0) {
@@ -105,11 +112,16 @@ int main(int argc, char* args[])
 			// execute input events
 			nodeRoot->DoEvent(new input_event_args{ evbuf, ivent });
 		}
-		poll_dt = prev_ticks;
 
-		// execute physics
-		nodeRoot->Step(dt, NULL);
+		// eg: if last tick delta > 1 seconds then tick
+		if (step_dt > (6.0f/1000.0f)) {
+			// execute physics
+			//prev_step_start_ticks = SDL_GetPerformanceCounter();
+			//step_dt = (prev_step_start_ticks - prev_step_ticks) / (double)freq;
 
+			nodeRoot->Step(step_dt, NULL);
+			prev_step_ticks = SDL_GetPerformanceCounter();
+		}
 		// blank frame
 		//SDL_FillRect(winSurface, NULL, SDL_MapRGB(winSurface->format, 255, 255, 255));
 
@@ -121,12 +133,10 @@ int main(int argc, char* args[])
 		SDL_RenderPresent(renderer);
 		//SDL_UpdateWindowSurface(window);
 
-		// delay betwween last frame and now
-		((HUD*)hud)->perfInfo->SetTextF("%.2f", 1000 / (dt * 1000));
 		//printf("tick => %f\n", dt);
 
 		prev_ticks = ticks;
-		SDL_Delay(16);
+		//SDL_Delay(16);
 	}
 
 	printf("END\n");

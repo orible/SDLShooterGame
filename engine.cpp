@@ -323,6 +323,7 @@ void Phys2D::Step(double dt, Node* parent) {
 
 void Node2D_Test::Step(double dt, Node* parent)
 {
-	this->localPos.x += cos(CurTime() / 1000.f) * 1.0f;
+	this->localPos.x += cos(CurTime() / 1000.f) * 100.0f * dt;
+	this->localPos.y += cos(CurTime() / 1000.f) * 100.0f * dt;
 	Node2D::Step(dt, parent);
 }
