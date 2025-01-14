@@ -129,6 +129,12 @@ long int Node2D::CurTime() {
 	return SDL_GetTicks();
 }
 
+
+int Node2D::CurTime_Seconds() {
+	return SDL_GetTicks() / 1000.0f;
+}
+
+
 Vec2D Node2D::RotatePoint(Vec2D p, float a) {
 	float cosa = cos(a);
 	float sina = sin(a);
@@ -141,23 +147,37 @@ Vec2D Node2D::RotatePoint(Vec2D p, float a) {
 OOBox Node2D::GetOOBounds() {
 	return OOBox{ GetAABounds(), this->rads };
 }
+
 Box Node2D::GetAABounds() {
-	return { pos.x, pos.y, 0, 0 };
+	return { localPos.x, localPos.y, 0, 0 };
 }
 
 // get parent transform matrix graph
-void Node2D::GetParentTransform()
+Vec2D Node2D::GetGlobalPositionTransform()
 {
 	Vec2D transform;
-	Node* node = this;
+	Node* node = this->parent;
+	if (node == NULL) {
+		this->globalPos = this->localPos;
+		return this->globalPos;
+	}
 
 	// traverse node graph backwards and build a transform list
-	while (node->parent != NULL) {
-		if (node->Id == "NODE2D") {
-			transform = transform + ((Node2D*)node)->GetTransform();
+	while (true) {
+		if (node->Type == "NODE2D") {
+			//transform = transform + ((Node2D*)node)->GetGlobalPositionTransform();
+			Vec2D transform = this->localPos + ((Node2D*)node)->GetGlobalPositionTransform();
+			this->globalPos = transform;
+			return transform;
+		}
+		if (node->parent == NULL) {
+			break;
 		}
 		node = node->parent;
 	}
+
+	this->globalPos = this->localPos;
+	return this->globalPos;
 }
 
 float Node2D::ToScreen(
@@ -174,21 +194,21 @@ void Node2D::RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
 	//(Node2D*)nodeRoot;
 }
 
-Vec2D Node2D::GetTransform() {
+Vec2D Node2D::GetLocalPos() {
 	//ToScreen(pos.x, pos.y, &point.x, &point.y, camera, screen.width, screen.height);
-	return this->pos;
+	return this->localPos;
 }
 
 Node2D::Node2D(): Node()
 {
-	this->Type == "NODE2D";
+	this->Type = "NODE2D";
 }
 
 void Surface::Step(double dt, Node* parent) {
 	Node2D::Step(dt, this);
 }
 void Surface::Render(SDL_Renderer* g) {
-	SDL_Rect rect;
+	//SDL_Rect rect;
 	//SDL_RenderDrawRect(g, &rect);
 	Node2D::Render(g);
 }
@@ -215,24 +235,30 @@ void Sprite::Step(double dt, Node* parent) {
 void Sprite::Render(SDL_Renderer* g) {
 	// assert texture is constructed all lazy like probably boils to EQ idk, TODO: inspect the assemblr
 	constructTexture(g);
+	Vec2D transform = GetGlobalPositionTransform();
 
-	double x = ((Node2D*)this->parent)->pos.x + this->pos.x;
-	double y = ((Node2D*)this->parent)->pos.y + this->pos.y;
+	//double x = this->globalPos.x;
+	//double y = this->globalPos.y;
+
+	//double x = ((Node2D*)this->parent)->pos.x + this->pos.x;
+	//double y = ((Node2D*)this->parent)->pos.y + this->pos.y;
 
 	// compute transient fields
-	SDL_Rect dstrect = { x, y, width, height };
+	SDL_Rect dstrect = { transform.x, transform.y, width, height };
 	SDL_RenderCopyEx(g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
 	Node2D::Render(g);
 }
+
 Sprite* Sprite::FromDisk(std::string filename) {
 	Sprite* sp = new Sprite();
 	sp->filename = filename;
 	sp->surf = SDL_LoadBMP(("./assets/" + filename).c_str());
 	return sp;
 }
+
 void Phys2D::do_gravity(double dt) {
 	Vec2D v1 = { 0, -100 };
-	Vec2D v2 = this->pos;
+	Vec2D v2 = GetGlobalPositionTransform(); //this->localPos;
 	Vec2D d = { v2.x - v1.x, v2.y - v1.y };
 
 	float m1 = 10;
@@ -280,14 +306,22 @@ void Phys2D::Step(double dt, Node* parent) {
 
 	do_friction(dt);
 
-	pos.x += velocity.x * dt;
-	pos.y += velocity.y * dt;
+	localPos.x += velocity.x * dt;
+	localPos.y += velocity.y * dt;
+
 	((HUD*)this->GetNode("/PlayHUD"))->debugInfo->SetTextF(
 		"Pos: %.1f x %.1f\nVel: %.1f x %.1f\nMag: %f",
-		pos.x, pos.y,
+		localPos.x, localPos.y,
 		velocity.x, velocity.y,
 		mag);
+	
 	//velocity.x += acceleration.x * dt;
 	//velocity.y += acceleration.y * dt;
 	Node2D::Step(dt, this);
+}
+
+void Node2D_Test::Step(double dt, Node* parent)
+{
+	this->localPos.x += cos(CurTime() / 1000.f) * 1.0f;
+	Node2D::Step(dt, parent);
 }

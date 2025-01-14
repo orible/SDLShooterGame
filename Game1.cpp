@@ -63,7 +63,7 @@ int main(int argc, char* args[])
 
 	TTF_Init();
 
-	nodeRoot = new Surface();
+	nodeRoot = new Node2D_Test();
 	nodeRoot->SetId("Root");
 
 	Node* map = new DrawableSurface();

@@ -18,8 +18,8 @@ bool TextBox::IsDirty() {
 	return this->dirty;
 }
 TextBox::TextBox(int x, int y, int width, int height) : Surface() {
-	this->pos.x = x;
-	this->pos.y = y;
+	this->localPos.x = x;
+	this->localPos.y = y;
 }
 void TextBox::Render(SDL_Renderer* g) {
 	if (this->dirty) {
@@ -40,7 +40,8 @@ void TextBox::Render(SDL_Renderer* g) {
 		SDL_FreeSurface(surf);
 		this->dirty = false;
 	}
-	SDL_Rect rect{ pos.x, pos.y, fwidth, fheight };
+	GetGlobalPositionTransform();;
+	SDL_Rect rect{ this->globalPos.x, this->globalPos.y, fwidth, fheight };
 	SDL_RenderCopy(g, tex, NULL, &rect);
 	Surface::Render(g);
 }

@@ -112,19 +112,27 @@ void dumpError();
 class Node2D : public Node {
 public:
 	float rads;
-	Vec2D pos;
+	Vec2D localPos;
+	Vec2D globalPos;
+
 	long int CurTime();
+	int CurTime_Seconds();
 	Vec2D RotatePoint(Vec2D p, float a);
 	virtual OOBox GetOOBounds();
 	virtual Box GetAABounds();
-	void GetParentTransform();
+	Vec2D GetGlobalPositionTransform();
 	float ToScreen(
 		double sim_x, double sim_y,
 		double* screen_x, double* screen_y,
 		Camera camera, int screen_width, int screen_height);
 	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir);
-	Vec2D GetTransform();
+	Vec2D GetLocalPos();
 	Node2D();
+};
+
+class Node2D_Test : public Node2D {
+public:
+	void Step(double dt, Node* parent);
 };
 
 class Surface : public Node2D {
