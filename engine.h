@@ -37,6 +37,15 @@ typedef struct Vec2D {
 	}
 } Vec2D;
 
+typedef struct Transform: Vec2D {
+	float rads;
+	float scale;
+	void operator =(Vec2D a) {
+		this->x = a.x;
+		this->y = a.y;
+	};
+} Transform;
+
 typedef struct VecInt2D {
 	int x, y;
 	float length() const {
@@ -120,7 +129,7 @@ public:
 	Vec2D RotatePoint(Vec2D p, float a);
 	virtual OOBox GetOOBounds();
 	virtual Box GetAABounds();
-	Vec2D GetGlobalPositionTransform();
+	Transform GetGlobalPositionTransform();
 	float ToScreen(
 		double sim_x, double sim_y,
 		double* screen_x, double* screen_y,

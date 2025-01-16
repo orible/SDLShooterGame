@@ -153,31 +153,38 @@ Box Node2D::GetAABounds() {
 }
 
 // get parent transform matrix graph
-Vec2D Node2D::GetGlobalPositionTransform()
+Transform Node2D::GetGlobalPositionTransform()
 {
-	Vec2D transform;
+	Transform transform;
+	transform = this->localPos;
+	transform.scale = 1;
+	
 	Node* node = this->parent;
-	if (node == NULL) {
-		this->globalPos = this->localPos;
-		return this->globalPos;
-	}
+	//if (node == NULL) {
+	//	this->globalPos = this->localPos;
+	//	transform.x = { this->globalPos, this->rads };
+	//	return transform;
+	//}
 
 	// traverse node graph backwards and build a transform list
-	while (true) {
+	while (node != NULL) {
 		if (node->Type == "NODE2D") {
+			Vec2D rotatedTransform = RotatePoint(((Node2D*)node)->localPos, ((Node2D*)node)->rads);
+			transform.x += rotatedTransform.x;
+			transform.y += rotatedTransform.y;
 			//transform = transform + ((Node2D*)node)->GetGlobalPositionTransform();
-			Vec2D transform = this->localPos + ((Node2D*)node)->GetGlobalPositionTransform();
-			this->globalPos = transform;
-			return transform;
-		}
-		if (node->parent == NULL) {
-			break;
+			//Vec2D transform = this->localPos + ((Node2D*)node)->GetGlobalPositionTransform();
+			//this->globalPos = transform;
+			//return transform;
 		}
 		node = node->parent;
 	}
 
-	this->globalPos = this->localPos;
-	return this->globalPos;
+	this->globalPos.x = transform.x;
+	this->globalPos.y = transform.y;
+
+	//this->globalPos = this->localPos;
+	return transform; //this->globalPos;
 }
 
 float Node2D::ToScreen(
@@ -323,7 +330,8 @@ void Phys2D::Step(double dt, Node* parent) {
 
 void Node2D_Test::Step(double dt, Node* parent)
 {
-	this->localPos.x += cos(CurTime() / 1000.f) * 100.0f * dt;
-	this->localPos.y += cos(CurTime() / 1000.f) * 100.0f * dt;
+	//this->localPos.x += cos(CurTime() / 1000.f) * 100.0f * dt;
+	//this->localPos.y += cos(CurTime() / 1000.f) * 100.0f * dt;
+	//this->rads = cos(CurTime() / 1000.f);
 	Node2D::Step(dt, parent);
 }
