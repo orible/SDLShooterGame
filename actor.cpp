@@ -76,7 +76,7 @@ void Actor::Step(double dt, Node* parent) {
 	dir.y = (actions[Actions::DOWN] ? 1.0f : 0.0f) - (actions[Actions::UP] ? 1.0f : 0.0f); // Down - Up
 
 	float mag = sqrtf(dir.x * dir.x + dir.y * dir.y);
-	((HUD*)this->GetNode("/PlayHUD"))->inputInfo->SetTextF("W[%c] S[%c] A[%c] D[%c] SPACE[?] %f\nAxis: (%f,%f)",
+	((HUD*)this->GetNode("/DebugHUD"))->inputInfo->SetTextF("W[%c] S[%c] A[%c] D[%c] SPACE[?] %f\nAxis: (%f,%f)",
 		this->dir.y < 0 ? 'X' : '_',
 		this->dir.y > 0 ? 'X' : '_',
 		this->dir.x < 0 ? 'X' : '_',
@@ -93,7 +93,7 @@ void Actor::Step(double dt, Node* parent) {
 		this->velocity.y += dir.y * impulse;
 	}
 
-	((DrawableSurface*)this->GetNode("/DrawableMap"))->Add(this->globalPos);
+	((DrawableSurface*)this->GetNode("/Camera/Base/DrawableMap"))->Add(this->globalPos);
 
 	/*if (mag > 0.0001f) {
 		Vec2D force = dirn;

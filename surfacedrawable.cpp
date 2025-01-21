@@ -11,10 +11,10 @@ void DrawableSurface::constructTexture(SDL_Renderer* g) {
 	if (tex == NULL) {
 		tex = SDL_CreateTexture(
 			g, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
-			1000, 1000);
+			this->width, this->height);
 		SDL_SetRenderTarget(g, tex);
 		SDL_SetRenderDrawColor(g, 0, 0, 0, 0); // Clear
-		SDL_Rect rect{ 0, 0, 1000, 1000 };
+		SDL_Rect rect{ 0, 0, this->width, this->width};
 		SDL_RenderFillRect(g, &rect);
 		SDL_SetRenderTarget(g, NULL);
 	}
@@ -125,10 +125,16 @@ void DrawableSurface::Render(SDL_Renderer* g) {
 	SDL_Rect dest = { 
 		this->globalPos.x, 
 		this->globalPos.y, 
-		1000 + this->globalPos.x, 
-		1000 + this->globalPos.y
+		this->width + this->globalPos.x, 
+		this->height + this->globalPos.y
 	};
-	SDL_Rect src = { 0, 0, 1000, 1000 };
+	SDL_Rect src = { 0, 0, this->width, this->width};
 	SDL_RenderCopy(g, tex, &src, &dest);
 	Surface::Render(g);
+}
+
+DrawableSurface::DrawableSurface()
+{
+	this->width = 1000;
+	this->height = 1000;
 }

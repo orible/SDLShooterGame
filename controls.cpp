@@ -9,6 +9,7 @@ void TextBox::SetTextF(const char* fmt, ...) {
 	std::string text(buf, ret);
 	SetText(text);
 	va_end(argp);
+	delete buf;
 }
 void TextBox::SetText(std::string text) {
 	this->text = text;
@@ -16,6 +17,10 @@ void TextBox::SetText(std::string text) {
 }
 bool TextBox::IsDirty() {
 	return this->dirty;
+}
+Vec2D TextBox::RenderedBounds()
+{
+	return { (double)this->fwidth, (double)this->fheight };
 }
 TextBox::TextBox(int align) : Surface() {
 	this->localPos.x = 0;
@@ -44,7 +49,7 @@ void TextBox::Render(SDL_Renderer* g) {
 		SDL_FreeSurface(surf);
 		this->dirty = false;
 	}
-	GetGlobalPositionTransform();;
+	GetGlobalPositionTransform();
 	SDL_Rect rect{ this->globalPos.x, this->globalPos.y, fwidth, fheight };
 	SDL_RenderCopy(g, tex, NULL, &rect);
 	Surface::Render(g);

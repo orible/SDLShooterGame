@@ -12,6 +12,7 @@ public:
 	void SetTextF(const char* fmt, ...);
 	void SetText(std::string text);
 	bool IsDirty();
+	Vec2D RenderedBounds();
 	TextBox(int align);
 	TextBox(int x, int y, int width, int height);
 	void Render(SDL_Renderer* g);

@@ -10,6 +10,7 @@
 #include <SDL_ttf.h>
 #include "engine.h"
 #include "hud.h"
+#include <assert.h>
 
 int Node::GetUID() {
 	return uuid++;
@@ -17,6 +18,8 @@ int Node::GetUID() {
 
 std::vector<Node*> gctable;
 void Node::SetId(std::string Id) {
+	// illegal to contain '/' characters so the user (me) doesn't confuse themselves
+	assert(Id.find('/') == std::string::npos);
 	this->Id = Id;
 }
 
@@ -91,6 +94,10 @@ void Node::SetParent(Node* parent) {
 	if (this->isDead) return;
 	this->parent = parent;
 }
+void Node::OnAddedToTree(Node* parent)
+{
+	// do nothing
+}
 void Node::Step(double dt, Node* parent) {
 	if (this->isDead) return;
 	for (int i = 0; i < this->children.size(); i++) {
@@ -98,15 +105,20 @@ void Node::Step(double dt, Node* parent) {
 	}
 }
 void Node::Render(SDL_Renderer* g) {
+	// do nothing is a stubby
+}
+void Node::RenderGraph(SDL_Renderer* g) {
 	if (this->isDead) return;
+	this->Render(g);
 	for (int i = 0; i < this->children.size(); i++) {
-		this->children[i]->Render(g);
+		this->children[i]->RenderGraph(g);
 	}
 }
 void Node::AddChild(Node* node) {
 	if (this->isDead) return;
 	node->parent = this;
 	this->children.push_back(node);
+	node->OnAddedToTree(this);
 }
 Node::Node(Node* parent) {
 	this->uuid = GetUID();
@@ -129,11 +141,9 @@ long int Node2D::CurTime() {
 	return SDL_GetTicks();
 }
 
-
 int Node2D::CurTime_Seconds() {
 	return SDL_GetTicks() / 1000.0f;
 }
-
 
 Vec2D Node2D::RotatePoint(Vec2D p, float a) {
 	float cosa = cos(a);
@@ -187,10 +197,15 @@ Transform Node2D::GetGlobalPositionTransform()
 	return transform; //this->globalPos;
 }
 
+void Node2D::SetLocalPos(Vec2D p)
+{
+	this->localPos = p;
+}
+
 float Node2D::ToScreen(
 	double sim_x, double sim_y,
 	double* screen_x, double* screen_y,
-	Camera camera, int screen_width, int screen_height) {
+	CameraData camera, int screen_width, int screen_height) {
 	*screen_x = (sim_x - camera.x) / camera.scale + screen_width / 2;
 	*screen_y = (sim_y - camera.y) / camera.scale + screen_height / 2;
 	return 0;
@@ -253,7 +268,7 @@ void Sprite::Render(SDL_Renderer* g) {
 	// compute transient fields
 	SDL_Rect dstrect = { transform.x, transform.y, width, height };
 	SDL_RenderCopyEx(g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
-	Node2D::Render(g);
+	Surface::Render(g);
 }
 
 Sprite* Sprite::FromDisk(std::string filename) {
@@ -317,7 +332,7 @@ void Phys2D::Step(double dt, Node* parent) {
 	localPos.x += velocity.x * dt;
 	localPos.y += velocity.y * dt;
 
-	((HUD*)this->GetNode("/PlayHUD"))->debugInfo->SetTextF(
+	((HUD*)this->GetNode("/DebugHUD"))->debugInfo->SetTextF(
 		"Pos: %.1f x %.1f\nVel: %.1f x %.1f\nMag: %f",
 		localPos.x, localPos.y,
 		velocity.x, velocity.y,

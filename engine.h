@@ -14,7 +14,7 @@
 typedef struct {
 	double x, y;        // Center of the viewport in simulation space
 	double scale;       // Scale factor: simulation units per screen pixel
-} Camera;
+} CameraData;
 
 typedef struct {
 	int width, height;
@@ -26,7 +26,10 @@ typedef struct {
 
 typedef struct Vec2D {
 	double x, y;
-	Vec2D operator + (Vec2D a) {
+	Vec2D operator -(Vec2D a) {
+		return { this->x - a.x, this->y- a.y };
+	}
+	Vec2D operator +(Vec2D a) {
 		return { this->x + a.x, this->y + a.y };
 	}
 	Vec2D operator *(Vec2D a) {
@@ -97,6 +100,10 @@ public:
 	void SetId(std::string Id);
 	void AddChild(Node* node);
 	void SetParent(Node* parent);
+
+	// called when added as child to another node
+	virtual void OnAddedToTree(Node* caller);
+
 	/// <summary>
 	/// Search for Node in graph if it starts with "/" then search from the Root else search from this nodes children
 	/// Eg: /PlayHud/Overlay == root -> get child PlayHud -> get Child Overlay -> return Overlay
@@ -111,7 +118,7 @@ public:
 	virtual void DoEvent(input_event_args* args);
 	virtual void Step(double dt, Node* parent);
 	virtual void Render(SDL_Renderer* g);
-
+	virtual void RenderGraph(SDL_Renderer* g);
 	Node(Node* parent);
 	Node();
 };
@@ -130,10 +137,11 @@ public:
 	virtual OOBox GetOOBounds();
 	virtual Box GetAABounds();
 	Transform GetGlobalPositionTransform();
+	void SetLocalPos(Vec2D p);
 	float ToScreen(
 		double sim_x, double sim_y,
 		double* screen_x, double* screen_y,
-		Camera camera, int screen_width, int screen_height);
+		CameraData camera, int screen_width, int screen_height);
 	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir);
 	Vec2D GetLocalPos();
 	Node2D();
@@ -145,14 +153,19 @@ public:
 };
 
 class Surface : public Node2D {
+protected:
+	int texwidth;
+	int texheight;
+	int width; 
+	int height;
 public:
 	void Step(double dt, Node* parent);
 	void Render(SDL_Renderer* g);
 };
 
-class Sprite : public Node2D {
-	int width;
-	int height;
+class Sprite : public Surface {
+	//int width;
+	//int height;
 	SDL_Surface* surf;
 	SDL_Texture* texture;
 	std::string filename;

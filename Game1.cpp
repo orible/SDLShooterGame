@@ -11,18 +11,21 @@
 #include "engine.h"
 #include "actor.h"
 #include "hud.h"
+#include "camera.h";
 #include "surfacedrawable.h"
+#include "soundlistener.h"
+#include "system.h"
 
 /// <summary>
 // World root, must be a Node2D as we need raycast search functions and other helpers
 /// </summary>
 
-Camera camera;
-Screen screen;
+CameraData camera;
+//Screen screen;
 long int uuid = 0;
 
-Node2D * nodeRoot = NULL;
-bool shouldFullScreen = false;
+System * nodeRoot = NULL;
+bool shouldFullScreen = true;
 
 int main(int argc, char* args[])
 {
@@ -30,8 +33,12 @@ int main(int argc, char* args[])
 	SDL_Window* window = NULL;
 	SDL_Renderer* renderer = NULL;
 
-	screen.width = 640;
-	screen.height = 480;
+	nodeRoot = new System();
+	nodeRoot->SetId("Root");
+
+
+	nodeRoot->ScreenWidth = 1000;
+	nodeRoot->ScreenHeight = 1000;
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		return -1;
@@ -41,11 +48,14 @@ int main(int argc, char* args[])
 	SDL_GetDisplayBounds(0, &display);
 
 	if (shouldFullScreen) {
-		screen.width = display.w;
-		screen.width = display.h;
+		nodeRoot->ScreenWidth = display.w;
+		nodeRoot->ScreenHeight = display.h;
 	}
 
-	window = SDL_CreateWindow("Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen.width, screen.height, shouldFullScreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("Window", 
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+		nodeRoot->ScreenWidth, nodeRoot->ScreenHeight, 
+		shouldFullScreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_SHOWN);
 
 	if (!window) {
 		return -1;
@@ -59,22 +69,32 @@ int main(int argc, char* args[])
 		return 1;
 	}
 
-	SDL_RenderSetLogicalSize(renderer, 640, 480);
+	//SDL_RenderSetLogicalSize(renderer, 640, 480);
 
 	TTF_Init();
 
-	nodeRoot = new Node2D_Test();
-	nodeRoot->SetId("Root");
+	Node* cam = new Camera();
+	cam->SetId("Camera");
+	nodeRoot->AddChild(cam);
+
+	Node* base = new Node();
+	base->SetId("Base");
+	cam->AddChild(base);
 
 	Node* map = new DrawableSurface();
 	map->SetId("DrawableMap");
-	nodeRoot->AddChild(map);
+	base->AddChild(map);
 
 	// hud goes in last as it's on top!
 	Node* hud = new HUD();
-	hud->SetId("PlayHUD");
+	hud->SetId("DebugHUD");
 	nodeRoot->AddChild(hud);
-	nodeRoot->GetNode("/PlayHUD");
+
+	SoundListener* listener = new SoundListener();
+	listener->Setup();
+	nodeRoot->AddChild(listener);
+
+	//base->GetNode("/PlayHUD");
 
 
 	long int prev_ticks = SDL_GetPerformanceCounter();
@@ -122,13 +142,14 @@ int main(int argc, char* args[])
 			nodeRoot->Step(step_dt, NULL);
 			prev_step_ticks = SDL_GetPerformanceCounter();
 		}
+
 		// blank frame
 		//SDL_FillRect(winSurface, NULL, SDL_MapRGB(winSurface->format, 255, 255, 255));
-
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 		SDL_RenderClear(renderer);
 
 		// render back to front
-		nodeRoot->Render(renderer);
+		nodeRoot->RenderGraph(renderer);
 		
 		SDL_RenderPresent(renderer);
 		//SDL_UpdateWindowSurface(window);
@@ -139,8 +160,9 @@ int main(int argc, char* args[])
 		//SDL_Delay(16);
 	}
 
-	printf("END\n");
-	system("pause");
+	nodeRoot->Dispose();
+	//printf("END\n");
+	//system("pause");
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
