@@ -102,14 +102,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAVE_C99_VARARGS_MACROS;HAVE_STDLIB_H;HAVE_MATH_H;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include;packagesmanual\aubio-0.4.6-win64\include;packagesmanual\aubio\src</AdditionalIncludeDirectories>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,14 +121,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include;packagesmanual\aubio-0.4.6-win64\include;packagesmanual\aubio\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -137,6 +138,79 @@
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="Game1.cpp" />
     <ClCompile Include="hud.cpp" />
+    <ClCompile Include="packagesmanual\aubio\src\cvec.c" />
+    <ClCompile Include="packagesmanual\aubio\src\effects\pitchshift_dummy.c" />
+    <ClCompile Include="packagesmanual\aubio\src\effects\pitchshift_rubberband.c" />
+    <ClCompile Include="packagesmanual\aubio\src\effects\rubberband_utils.c" />
+    <ClCompile Include="packagesmanual\aubio\src\effects\timestretch_dummy.c" />
+    <ClCompile Include="packagesmanual\aubio\src\effects\timestretch_rubberband.c" />
+    <ClCompile Include="packagesmanual\aubio\src\fmat.c" />
+    <ClCompile Include="packagesmanual\aubio\src\fvec.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\audio_unit.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\ioutils.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\sink.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_apple_audio.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_flac.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_sndfile.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_vorbis.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_wavwrite.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\source.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\source_apple_audio.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\source_avcodec.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\source_sndfile.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\source_wavread.c" />
+    <ClCompile Include="packagesmanual\aubio\src\io\utils_apple_audio.c" />
+    <ClCompile Include="packagesmanual\aubio\src\lvec.c" />
+    <ClCompile Include="packagesmanual\aubio\src\mathutils.c" />
+    <ClCompile Include="packagesmanual\aubio\src\musicutils.c" />
+    <ClCompile Include="packagesmanual\aubio\src\notes\notes.c" />
+    <ClCompile Include="packagesmanual\aubio\src\onset\onset.c" />
+    <ClCompile Include="packagesmanual\aubio\src\onset\peakpicker.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitch.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchfcomb.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchmcomb.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchschmitt.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchspecacf.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchyin.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchyinfast.c" />
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchyinfft.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\awhitening.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_accelerate.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_fftw.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_ipp.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_ooura.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_plain.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\fft.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\filterbank.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\filterbank_mel.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\mfcc.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\ooura_fft8g.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\phasevoc.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\specdesc.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\statistics.c" />
+    <ClCompile Include="packagesmanual\aubio\src\spectral\tss.c" />
+    <ClCompile Include="packagesmanual\aubio\src\synth\sampler.c" />
+    <ClCompile Include="packagesmanual\aubio\src\synth\wavetable.c" />
+    <ClCompile Include="packagesmanual\aubio\src\temporal\a_weighting.c" />
+    <ClCompile Include="packagesmanual\aubio\src\temporal\biquad.c" />
+    <ClCompile Include="packagesmanual\aubio\src\temporal\c_weighting.c" />
+    <ClCompile Include="packagesmanual\aubio\src\temporal\filter.c" />
+    <ClCompile Include="packagesmanual\aubio\src\temporal\resampler.c" />
+    <ClCompile Include="packagesmanual\aubio\src\tempo\beattracking.c" />
+    <ClCompile Include="packagesmanual\aubio\src\tempo\tempo.c" />
+    <ClCompile Include="packagesmanual\aubio\src\utils\hist.c" />
+    <ClCompile Include="packagesmanual\aubio\src\utils\log.c" />
+    <ClCompile Include="packagesmanual\aubio\src\utils\parameter.c" />
+    <ClCompile Include="packagesmanual\aubio\src\utils\scale.c" />
+    <ClCompile Include="packagesmanual\aubio\src\utils\strutils.c" />
+    <ClCompile Include="packagesmanual\aubio\src\utils\windll.c" />
+    <ClCompile Include="packagesmanual\aubio\src\vecutils.c" />
+    <ClCompile Include="packagesmanual\imgui\imgui.cpp" />
+    <ClCompile Include="packagesmanual\imgui\imgui_demo.cpp" />
+    <ClCompile Include="packagesmanual\imgui\imgui_draw.cpp" />
+    <ClCompile Include="packagesmanual\imgui\imgui_tables.cpp" />
+    <ClCompile Include="packagesmanual\imgui\imgui_widgets.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="soundlistener.cpp" />
     <ClCompile Include="surfacedrawable.cpp" />
@@ -144,6 +218,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="packagesmanual\aubio\src\wscript_build" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\player.bmp">
@@ -159,6 +234,68 @@
     <ClInclude Include="controls.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="hud.h" />
+    <ClInclude Include="packagesmanual\aubio\src\aubio.h" />
+    <ClInclude Include="packagesmanual\aubio\src\aubio_priv.h" />
+    <ClInclude Include="packagesmanual\aubio\src\cvec.h" />
+    <ClInclude Include="packagesmanual\aubio\src\effects\pitchshift.h" />
+    <ClInclude Include="packagesmanual\aubio\src\effects\timestretch.h" />
+    <ClInclude Include="packagesmanual\aubio\src\fmat.h" />
+    <ClInclude Include="packagesmanual\aubio\src\fvec.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\audio_unit.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\ioutils.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\sink.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\sink_apple_audio.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\sink_sndfile.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\sink_wavwrite.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\source.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\source_apple_audio.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\source_avcodec.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\source_sndfile.h" />
+    <ClInclude Include="packagesmanual\aubio\src\io\source_wavread.h" />
+    <ClInclude Include="packagesmanual\aubio\src\lvec.h" />
+    <ClInclude Include="packagesmanual\aubio\src\mathutils.h" />
+    <ClInclude Include="packagesmanual\aubio\src\musicutils.h" />
+    <ClInclude Include="packagesmanual\aubio\src\notes\notes.h" />
+    <ClInclude Include="packagesmanual\aubio\src\onset\onset.h" />
+    <ClInclude Include="packagesmanual\aubio\src\onset\peakpicker.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitch.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchfcomb.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchmcomb.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchschmitt.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchspecacf.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchyin.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchyinfast.h" />
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchyinfft.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\awhitening.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\dct.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\fft.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\filterbank.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\filterbank_mel.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\mfcc.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\phasevoc.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\specdesc.h" />
+    <ClInclude Include="packagesmanual\aubio\src\spectral\tss.h" />
+    <ClInclude Include="packagesmanual\aubio\src\synth\sampler.h" />
+    <ClInclude Include="packagesmanual\aubio\src\synth\wavetable.h" />
+    <ClInclude Include="packagesmanual\aubio\src\temporal\a_weighting.h" />
+    <ClInclude Include="packagesmanual\aubio\src\temporal\biquad.h" />
+    <ClInclude Include="packagesmanual\aubio\src\temporal\c_weighting.h" />
+    <ClInclude Include="packagesmanual\aubio\src\temporal\filter.h" />
+    <ClInclude Include="packagesmanual\aubio\src\temporal\resampler.h" />
+    <ClInclude Include="packagesmanual\aubio\src\tempo\beattracking.h" />
+    <ClInclude Include="packagesmanual\aubio\src\tempo\tempo.h" />
+    <ClInclude Include="packagesmanual\aubio\src\types.h" />
+    <ClInclude Include="packagesmanual\aubio\src\utils\hist.h" />
+    <ClInclude Include="packagesmanual\aubio\src\utils\log.h" />
+    <ClInclude Include="packagesmanual\aubio\src\utils\parameter.h" />
+    <ClInclude Include="packagesmanual\aubio\src\utils\scale.h" />
+    <ClInclude Include="packagesmanual\aubio\src\vecutils.h" />
+    <ClInclude Include="packagesmanual\imgui\imconfig.h" />
+    <ClInclude Include="packagesmanual\imgui\imgui.h" />
+    <ClInclude Include="packagesmanual\imgui\imgui_internal.h" />
+    <ClInclude Include="packagesmanual\imgui\imstb_rectpack.h" />
+    <ClInclude Include="packagesmanual\imgui\imstb_textedit.h" />
+    <ClInclude Include="packagesmanual\imgui\imstb_truetype.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="soundlistener.h" />
     <ClInclude Include="surfacedrawable.h" />

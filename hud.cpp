@@ -15,6 +15,12 @@ void HUD::OnAddedToTree(Node * caller) {
 
 	Vec2D v{ 0, sys->ScreenHeight - 80 };
 	this->inputInfo->SetLocalPos(v);
+
+	this->trackInfo->SetLocalPos(Vec2D{ 
+		(double)sys->ScreenWidth - 300, 
+		100 
+	});
+	this->trackInfo->SetFontSize(48);
 }
 
 HUD::HUD() : Surface()
@@ -23,6 +29,7 @@ HUD::HUD() : Surface()
 	this->AddChild(this->debugInfo);
 	this->AddChild(this->inputInfo);
 	this->AddChild(this->drawSurfaceInfo);
+	this->AddChild(this->trackInfo);
 }
 
 void HUD::Render(SDL_Renderer* g) {

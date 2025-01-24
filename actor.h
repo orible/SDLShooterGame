@@ -1,6 +1,7 @@
 #ifndef H_ACTOR
 #define H_ACTOR
-#include "engine.h";
+#include "engine.h"
+
 // engine.h: This file contains the 'main' function. Program execution begins and ends there.
 //
 class Actor : public Phys2D {

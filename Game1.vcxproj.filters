@@ -16,6 +16,12 @@
     <Filter Include="Resource Files\fonts">
       <UniqueIdentifier>{f1048b2c-c065-4889-bf3b-cd399ec0b4df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="aubio">
+      <UniqueIdentifier>{8a3ee346-0abb-4496-ae9d-68c5d05bb108}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{04e828a7-576c-43c2-9b95-ce9371249247}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game1.cpp">
@@ -48,9 +54,231 @@
     <ClCompile Include="system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\cvec.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\fmat.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\fvec.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\lvec.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\mathutils.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\musicutils.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\vecutils.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\effects\pitchshift_dummy.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\effects\pitchshift_rubberband.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\effects\rubberband_utils.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\effects\timestretch_dummy.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\effects\timestretch_rubberband.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\audio_unit.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\ioutils.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\sink.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_apple_audio.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_flac.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_sndfile.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_vorbis.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\sink_wavwrite.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\source.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\source_apple_audio.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\source_avcodec.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\source_sndfile.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\source_wavread.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\io\utils_apple_audio.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\notes\notes.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\onset\onset.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\onset\peakpicker.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitch.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchfcomb.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchmcomb.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchschmitt.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchspecacf.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchyin.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchyinfast.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\pitch\pitchyinfft.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\awhitening.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_accelerate.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_fftw.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_ipp.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_ooura.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\dct_plain.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\fft.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\filterbank.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\filterbank_mel.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\mfcc.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\ooura_fft8g.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\phasevoc.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\specdesc.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\statistics.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\spectral\tss.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\synth\sampler.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\synth\wavetable.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\tempo\beattracking.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\tempo\tempo.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\temporal\a_weighting.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\temporal\biquad.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\temporal\c_weighting.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\temporal\filter.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\temporal\resampler.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\utils\hist.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\utils\log.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\utils\parameter.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\utils\scale.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\utils\strutils.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\aubio\src\utils\windll.c">
+      <Filter>aubio</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="packagesmanual\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="packagesmanual\aubio\src\wscript_build">
+      <Filter>aubio</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\player.bmp">
@@ -84,6 +312,192 @@
     </ClInclude>
     <ClInclude Include="system.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\aubio.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\aubio_priv.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\cvec.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\fmat.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\fvec.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\lvec.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\mathutils.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\musicutils.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\types.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\vecutils.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\effects\pitchshift.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\effects\timestretch.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\audio_unit.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\ioutils.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\sink.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\sink_apple_audio.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\sink_sndfile.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\sink_wavwrite.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\source.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\source_apple_audio.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\source_avcodec.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\source_sndfile.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\io\source_wavread.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\notes\notes.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\onset\onset.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\onset\peakpicker.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitch.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchfcomb.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchmcomb.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchschmitt.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchspecacf.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchyin.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchyinfast.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\pitch\pitchyinfft.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\awhitening.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\dct.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\fft.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\filterbank.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\filterbank_mel.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\mfcc.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\phasevoc.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\specdesc.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\spectral\tss.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\synth\sampler.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\synth\wavetable.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\tempo\beattracking.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\tempo\tempo.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\temporal\a_weighting.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\temporal\biquad.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\temporal\c_weighting.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\temporal\filter.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\temporal\resampler.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\utils\hist.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\utils\log.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\utils\parameter.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\aubio\src\utils\scale.h">
+      <Filter>aubio</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\imgui\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\imgui\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\imgui\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="packagesmanual\imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

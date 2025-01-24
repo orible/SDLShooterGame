@@ -18,6 +18,10 @@ void TextBox::SetText(std::string text) {
 bool TextBox::IsDirty() {
 	return this->dirty;
 }
+void TextBox::SetFontSize(int size)
+{
+	this->fontSize = size;
+}
 Vec2D TextBox::RenderedBounds()
 {
 	return { (double)this->fwidth, (double)this->fheight };
@@ -35,6 +39,9 @@ void TextBox::Render(SDL_Renderer* g) {
 		if (this->tex != NULL) {
 			SDL_DestroyTexture(this->tex);
 			this->tex = NULL;
+		}
+		if (this->font == NULL) {
+			font = TTF_OpenFont("./assets/fonts/Broken Console Bold.ttf", fontSize);
 		}
 		SDL_Color textColor = { 255, 255, 255, 0 };
 		SDL_Color bgColor = { 10, 10, 10, 0 };

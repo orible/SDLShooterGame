@@ -1,6 +1,9 @@
 ﻿// Game1.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include <windows.h>
+#include <minwindef.h>
+#include <winnt.h>
 #include <filesystem>
 #include <iostream>
 #include <sstream>
