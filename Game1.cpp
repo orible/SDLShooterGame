@@ -115,7 +115,7 @@ int main(int argc, char* args[])
 	eventbuf * evbuf = new eventbuf;
 
 	nodeRoot->AddChild(new Actor());
-
+	RenderParams renderParams{ renderer };
 	while (isRunning) {
 		long int ticks = SDL_GetPerformanceCounter();
 		dt = (ticks - prev_ticks) / (double)freq;
@@ -152,7 +152,7 @@ int main(int argc, char* args[])
 		SDL_RenderClear(renderer);
 
 		// render back to front
-		nodeRoot->RenderGraph(renderer);
+		nodeRoot->RenderGraph(&renderParams);
 		
 		SDL_RenderPresent(renderer);
 		//SDL_UpdateWindowSurface(window);

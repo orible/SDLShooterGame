@@ -96,30 +96,30 @@ void DrawableSurface::DrawThickLine(SDL_Renderer* renderer, float x1, float y1, 
 	// Cleanup
 	SDL_DestroyTexture(lineTexture);
 }
-void DrawableSurface::Render(SDL_Renderer* g) {
-	constructTexture(g);
+void DrawableSurface::Render(RenderParams* p) {
+	constructTexture(p->g);
 	GetGlobalPositionTransform();
 
 	bool isDirty = queue.size() > 0;
 
 	if (isDirty) {
 		// event queue
-		SDL_SetRenderDrawColor(g, 255, 255, 255, 0);
-		SDL_SetRenderTarget(g, tex);
+		SDL_SetRenderDrawColor(p->g, 255, 255, 255, 0);
+		SDL_SetRenderTarget(p->g, tex);
 		if (queue.size() < 2) {
-			SDL_RenderDrawPoint(g, queue[0].x, queue[0].y);
+			SDL_RenderDrawPoint(p->g, queue[0].x, queue[0].y);
 		}
 		else {
 			Vec2D lx = { tail.x, tail.y };
 			for (int i = 0; i < queue.size(); i++) {
-				SDL_RenderDrawLine(g, lx.x, lx.y, queue[i].x, queue[i].y);
+				SDL_RenderDrawLine(p->g, lx.x, lx.y, queue[i].x, queue[i].y);
 				//SDL_RenderDrawPoint(g, queue[i].x, queue[i].y);
 				lx = { (double)queue[i].x, (double)queue[i].y };
 			}
 			tail = lx;
 			queue.clear();
 		}
-		SDL_SetRenderTarget(g, NULL);
+		SDL_SetRenderTarget(p->g, NULL);
 	}
 	
 	SDL_Rect dest = { 
@@ -129,8 +129,8 @@ void DrawableSurface::Render(SDL_Renderer* g) {
 		this->height + this->globalPos.y
 	};
 	SDL_Rect src = { 0, 0, this->width, this->width};
-	SDL_RenderCopy(g, tex, &src, &dest);
-	Surface::Render(g);
+	SDL_RenderCopy(p->g, tex, &src, &dest);
+	Surface::Render(p);
 }
 
 DrawableSurface::DrawableSurface()

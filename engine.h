@@ -1,4 +1,4 @@
-#ifndef ENGINE_H
+﻿#ifndef ENGINE_H
 #define ENGINE_H
 // engine.h: This file contains the 'main' function. Program execution begins and ends there.
 //
@@ -24,6 +24,16 @@ typedef struct {
 	double x, y;
 } Point;
 
+struct RenderParams {
+	SDL_Renderer* g;
+};
+
+// Normalize between -π and π
+float NormalizeRotation(float rads);
+
+// Ensure the angle is between 0 and 2*π (0 to 360 degrees)
+float ClampRotation(float rads);
+
 typedef struct Vec2D {
 	double x, y;
 	Vec2D operator -(Vec2D a) {
@@ -32,11 +42,45 @@ typedef struct Vec2D {
 	Vec2D operator +(Vec2D a) {
 		return { this->x + a.x, this->y + a.y };
 	}
-	Vec2D operator *(Vec2D a) {
+	Vec2D operator *(float scalar) const {
+		return { x * scalar, y * scalar };
+	}
+	// Vector subtraction
+	Vec2D operator-(const Vec2D& other) const {
+		return { x - other.x, y - other.y };
+	}
+	Vec2D Hadamard(Vec2D a) {
 		return { this->x * a.x, this->y * a.y };
+	}
+	float Cross(Vec2D a) {
+		return this->x * a.y - this->y * a.x;
 	}
 	float length() const {
 		return sqrt(x * x + y * y);
+	}
+
+	/// <summary>
+	/// the measurement of how perpendicular a vector is to another one, if length of a or b vectors is 0 then the result is zero!
+	/// if the vector is the same or the same but mirrored the result is zero!
+	/// (1, 1) x (-1, -1) == 0	 
+	/// dot = 0: Vectors are perpendicular.
+	/// dot > 0: Vectors are pointing in the same general direction.
+	/// dot < 0 : Vectors are pointing in opposite directions.
+	/// </summary>
+	/// <param name="other"></param>
+	/// <returns></returns>
+	float Dot(const Vec2D& other) const {
+		return x * other.x + y * other.y;
+	}
+
+	// Rotate vector by an angle (radians)
+	Vec2D Rotate(float angle) const {
+		float cosTheta = std::cos(angle);
+		float sinTheta = std::sin(angle);
+		return {
+			x * cosTheta - y * sinTheta,
+			x * sinTheta + y * cosTheta
+		};
 	}
 } Vec2D;
 
@@ -56,16 +100,33 @@ typedef struct VecInt2D {
 	}
 } VecInt2D;
 
-typedef struct {
+struct Box {
 	Vec2D pos;
 	int width;
 	int height;
-} Box;
+	void Zero() {
+		this->pos.x = 0;
+		this->pos.y = 0;
+		this->width = 0;
+		this->height = 0;
+	}
+};
 
 typedef struct {
 	Box box;
 	float rot;
 } OOBox;
+
+struct Ray {
+	Vec2D origin;
+	Vec2D direction; // Should be normalized
+};
+
+struct OBB {
+	Vec2D center;
+	Vec2D halfExtents; // Half width and height
+	float rotation;    // In radians
+};
 
 enum NodeType {
 	NODE,
@@ -73,6 +134,10 @@ enum NodeType {
 	SURFACE,
 	SPRITE,
 	PHYS,
+};
+
+struct StepParams {
+
 };
 
 typedef struct {
@@ -103,7 +168,7 @@ public:
 
 	// called when added as child to another node
 	virtual void OnAddedToTree(Node* caller);
-
+	
 	/// <summary>
 	/// Search for Node in graph if it starts with "/" then search from the Root else search from this nodes children
 	/// Eg: /PlayHud/Overlay == root -> get child PlayHud -> get Child Overlay -> return Overlay
@@ -117,8 +182,8 @@ public:
 	virtual void Dispose();
 	virtual void DoEvent(input_event_args* args);
 	virtual void Step(double dt, Node* parent);
-	virtual void Render(SDL_Renderer* g);
-	virtual void RenderGraph(SDL_Renderer* g);
+	virtual void Render(RenderParams* p);
+	virtual void RenderGraph(RenderParams *p);
 	Node(Node* parent);
 	Node();
 };
@@ -127,25 +192,46 @@ void dumpError();
 
 class Node2D : public Node {
 public:
+	// rotation
 	float rads;
+
 	Vec2D localPos;
 	Vec2D globalPos;
 
 	long int CurTime();
 	int CurTime_Seconds();
+
 	Vec2D RotatePoint(Vec2D p, float a);
-	virtual OOBox GetOOBounds();
-	virtual Box GetAABounds();
 	Transform GetGlobalPositionTransform();
+
+	float GetLocalRotation();
+	float GetGlobalRotation();
+
 	void SetLocalPos(Vec2D p);
 	float ToScreen(
 		double sim_x, double sim_y,
 		double* screen_x, double* screen_y,
 		CameraData camera, int screen_width, int screen_height);
-	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir);
+	
+	void Render(RenderParams* p);
 	Vec2D GetLocalPos();
 	Node2D();
 };
+
+/// <summary>
+/// Impliments solid checking for the node object
+/// </summary>
+class Solid2D : public Node2D {
+protected:
+	Box bounds;
+	virtual OBB GetOOBounds();
+	virtual Box GetAABounds();
+	void SetBounds(int width, int height);
+	bool ShouldCollide(Solid2D * caller);
+	bool RayIntersectsOBB(const Ray& ray, const OBB& obb, float& tEntry, float& tExit);
+	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir);
+};
+
 
 class Node2D_Test : public Node2D {
 public:
@@ -160,7 +246,7 @@ protected:
 	int height;
 public:
 	void Step(double dt, Node* parent);
-	void Render(SDL_Renderer* g);
+	//void Render(RenderParams* p);
 };
 
 class Sprite : public Surface {
@@ -170,13 +256,16 @@ class Sprite : public Surface {
 	SDL_Texture* texture;
 	std::string filename;
 public:
-	void constructTexture(SDL_Renderer* g);
+	void constructTexture(SDL_Renderer *p);
+	Box GetSpriteSize();
+	void SamplePoints(std::vector<Vec2D> *p); // RRGGBBAA
 	void Step(double dt, Node* parent);
-	void Render(SDL_Renderer* g);
+	void Render(RenderParams* p);
+	static Sprite* FromSprite(Sprite* sprite, int width, int height);
 	static Sprite* FromDisk(std::string filename);
 };
 
-class Phys2D : public Node2D {
+class Phys2D : public Solid2D {
 public:
 	double friction = 10;
 	Vec2D velocity;

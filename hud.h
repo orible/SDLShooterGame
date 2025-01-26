@@ -16,7 +16,7 @@ public:
 	void UpdatePerformance();
 	void OnAddedToTree(Node* caller);
 	HUD();
-	void Render(SDL_Renderer* g);
+	void Render(RenderParams* p);
 };
 
 #endif

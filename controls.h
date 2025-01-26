@@ -17,7 +17,7 @@ public:
 	Vec2D RenderedBounds();
 	TextBox(int align);
 	TextBox(int x, int y, int width, int height);
-	void Render(SDL_Renderer* g);
+	void Render(RenderParams* p);
 };
 
 #endif

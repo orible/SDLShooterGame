@@ -1,4 +1,4 @@
-// Game1.cpp : This file contains the 'main' function. Program execution begins and ends there.
+﻿// Game1.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include <filesystem>
@@ -11,6 +11,22 @@
 #include "engine.h"
 #include "hud.h"
 #include <assert.h>
+
+// Normalize between -π and π
+float NormalizeRotation(float rads) {
+	const float PI = M_PI;
+	while (rads >= PI) rads -= 2 * PI;
+	while (rads < -PI) rads += 2 * PI;
+	return rads;
+}
+
+// Ensure the angle is between 0 and 2*π (0 to 360 degrees)
+float ClampRotation(float rads) {
+	const float TWO_PI = 2 * M_PI;
+	while (rads >= TWO_PI) rads -= TWO_PI;   // Wrap around for angles greater than 2π
+	while (rads < 0) rads += TWO_PI;          // Wrap around for negative angles
+	return rads;
+}
 
 int Node::GetUID() {
 	return uuid++;
@@ -104,14 +120,14 @@ void Node::Step(double dt, Node* parent) {
 		this->children[i]->Step(dt, this);
 	}
 }
-void Node::Render(SDL_Renderer* g) {
+void Node::Render(RenderParams* p) {
 	// do nothing is a stubby
 }
-void Node::RenderGraph(SDL_Renderer* g) {
+void Node::RenderGraph(RenderParams* p) {
 	if (this->isDead) return;
-	this->Render(g);
+	this->Render(p);
 	for (int i = 0; i < this->children.size(); i++) {
-		this->children[i]->RenderGraph(g);
+		this->children[i]->RenderGraph(p);
 	}
 }
 void Node::AddChild(Node* node) {
@@ -154,11 +170,14 @@ Vec2D Node2D::RotatePoint(Vec2D p, float a) {
 	};
 }
 	
-OOBox Node2D::GetOOBounds() {
-	return OOBox{ GetAABounds(), this->rads };
+OBB Solid2D::GetOOBounds() {
+	Vec2D pos = this->GetLocalPos();
+	Vec2D c{ pos.x + (this->bounds.width / 2), pos.y + (this->bounds.height / 2) };
+	Vec2D v{ (this->bounds.width / 2), (this->bounds.height / 2) };
+	return OBB{ c, v, this->rads };
 }
 
-Box Node2D::GetAABounds() {
+Box Solid2D::GetAABounds() {
 	return { localPos.x, localPos.y, 0, 0 };
 }
 
@@ -197,6 +216,24 @@ Transform Node2D::GetGlobalPositionTransform()
 	return transform; //this->globalPos;
 }
 
+float Node2D::GetLocalRotation() {
+	return rads;
+}
+
+float Node2D::GetGlobalRotation()
+{
+	Node* node = this->parent;
+	float rads = this->rads;
+	while (node != NULL) {
+		if (node->Type == "NODE2D") {
+			rads += ((Node2D*)node)->rads;
+		}
+		node = node->parent;
+	}
+
+	return rads;
+}
+
 void Node2D::SetLocalPos(Vec2D p)
 {
 	this->localPos = p;
@@ -211,9 +248,47 @@ float Node2D::ToScreen(
 	return 0;
 }
 
-void Node2D::RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
+bool Solid2D::ShouldCollide(Solid2D* caller)
+{
+	// called by another ray intersection test - override if true
+	return true;
+}
+
+bool Solid2D::RayIntersectsOBB(const Ray& ray, const OBB& obb, float& tEntry, float& tExit) {
+	// Step 1: Compute the local-space ray
+	Vec2D rayOriginLocal = (ray.origin - obb.center).Rotate(-obb.rotation);
+	Vec2D rayDirectionLocal = ray.direction.Rotate(-obb.rotation);
+
+	// Step 2: Perform AABB-Ray intersection in local space
+	Vec2D min = { -obb.halfExtents.x, -obb.halfExtents.y };
+	Vec2D max = { obb.halfExtents.x, obb.halfExtents.y };
+
+	float invDirX = 1.0f / rayDirectionLocal.x;
+	float invDirY = 1.0f / rayDirectionLocal.y;
+
+	float tMinX = (min.x - rayOriginLocal.x) * invDirX;
+	float tMaxX = (max.x - rayOriginLocal.x) * invDirX;
+	if (invDirX < 0.0f) std::swap(tMinX, tMaxX);
+
+	float tMinY = (min.y - rayOriginLocal.y) * invDirY;
+	float tMaxY = (max.y - rayOriginLocal.y) * invDirY;
+	if (invDirY < 0.0f) std::swap(tMinY, tMaxY);
+
+	tEntry = std::max(tMinX, tMinY);
+	tExit = std::min(tMaxX, tMaxY);
+
+	// Step 3: Check if intersection exists
+	return tEntry <= tExit && tExit > 0.0f;
+}
+
+void Solid2D::RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
 	//void Box1 = GetAABounds();
 	//(Node2D*)nodeRoot;
+}
+
+void Node2D::Render(RenderParams* p)
+{
+	Node::Render(p);
 }
 
 Vec2D Node2D::GetLocalPos() {
@@ -228,11 +303,6 @@ Node2D::Node2D(): Node()
 
 void Surface::Step(double dt, Node* parent) {
 	Node2D::Step(dt, this);
-}
-void Surface::Render(SDL_Renderer* g) {
-	//SDL_Rect rect;
-	//SDL_RenderDrawRect(g, &rect);
-	Node2D::Render(g);
 }
 
 void Sprite::constructTexture(SDL_Renderer* g) {
@@ -249,14 +319,40 @@ void Sprite::constructTexture(SDL_Renderer* g) {
 		SDL_FreeSurface(surf);
 	}
 }
+
+Box Sprite::GetSpriteSize()
+{
+	// TODO: fix this by using box not vec2D as it's narrowing an int to double!!
+	return Box{ Vec2D{0, 0}, this->texwidth, this->texheight };
+}
+
+void Sprite::SamplePoints(std::vector<Vec2D> *p)
+{
+	SDL_SetTextureBlendMode(this->texture, SDL_BLENDMODE_BLEND);
+	
+	int width, height;
+	SDL_QueryTexture(this->texture, NULL, NULL, &width, &height);
+
+	int pitch;
+	void* pixels;
+	SDL_LockTexture(this->texture, NULL, &pixels, &pitch);
+
+	Uint32* upixels = (Uint32*)pixels;
+
+	for (int i = 0; i < width * height; i++) {
+		
+	}
+
+	SDL_UnlockTexture(this->texture);
+}
 void Sprite::Step(double dt, Node* parent) {
 	this->rads = cos(CurTime() / 1000.f);
 	//printf("%d\n", this->rads);
 	Node2D::Step(dt, parent);
 }
-void Sprite::Render(SDL_Renderer* g) {
+void Sprite::Render(RenderParams *p) {
 	// assert texture is constructed all lazy like probably boils to EQ idk, TODO: inspect the assemblr
-	constructTexture(g);
+	constructTexture(p->g);
 	Vec2D transform = GetGlobalPositionTransform();
 
 	//double x = this->globalPos.x;
@@ -267,8 +363,18 @@ void Sprite::Render(SDL_Renderer* g) {
 
 	// compute transient fields
 	SDL_Rect dstrect = { transform.x, transform.y, width, height };
-	SDL_RenderCopyEx(g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
-	Surface::Render(g);
+	SDL_RenderCopyEx(p->g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
+	Surface::Render(p);
+}
+
+/// <summary>
+///	Read sprite memory and copy part of or all of it's texture
+/// </summary>
+/// <param name="sprite"></param>
+/// <returns></returns>
+Sprite* Sprite::FromSprite(Sprite* sprite, int width, int height)
+{
+	return nullptr;
 }
 
 Sprite* Sprite::FromDisk(std::string filename) {

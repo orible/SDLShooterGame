@@ -32,11 +32,11 @@ HUD::HUD() : Surface()
 	this->AddChild(this->trackInfo);
 }
 
-void HUD::Render(SDL_Renderer* g) {
-	perfInfo->Render(g);
-	logo->Render(g);
+void HUD::Render(RenderParams* p) {
+	perfInfo->Render(p);
+	logo->Render(p);
 	//debugInfo->Render(g);
 	//inputInfo->Render(g);
 	//drawSurfaceInfo->Render(g);
-	Surface::Render(g);
+	Surface::Render(p);
 }

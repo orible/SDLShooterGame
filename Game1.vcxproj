@@ -138,6 +138,7 @@
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="Game1.cpp" />
     <ClCompile Include="hud.cpp" />
+    <ClCompile Include="mapimage.cpp" />
     <ClCompile Include="packagesmanual\aubio\src\cvec.c" />
     <ClCompile Include="packagesmanual\aubio\src\effects\pitchshift_dummy.c" />
     <ClCompile Include="packagesmanual\aubio\src\effects\pitchshift_rubberband.c" />
@@ -234,6 +235,7 @@
     <ClInclude Include="controls.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="hud.h" />
+    <ClInclude Include="mapimage.h" />
     <ClInclude Include="packagesmanual\aubio\src\aubio.h" />
     <ClInclude Include="packagesmanual\aubio\src\aubio_priv.h" />
     <ClInclude Include="packagesmanual\aubio\src\cvec.h" />

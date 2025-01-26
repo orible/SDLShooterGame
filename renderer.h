@@ -13,9 +13,9 @@ class Renderer: Node2D
 	std::vector<RenderLayer>* stack1;
 	std::vector<RenderLayer>* stack2;
 private:
-	void Render(SDL_Renderer* g, Node* node);
+	void Render(RenderParams* p, Node* node);
 public:
-	void DeferredRender(SDL_Renderer * g);
+	void DeferredRender(RenderParams* p);
 	Renderer();
 };
 

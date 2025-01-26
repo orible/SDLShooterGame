@@ -34,7 +34,7 @@ TextBox::TextBox(int x, int y, int width, int height) : Surface() {
 	this->localPos.x = x;
 	this->localPos.y = y;
 }
-void TextBox::Render(SDL_Renderer* g) {
+void TextBox::Render(RenderParams* p) {
 	if (this->dirty) {
 		if (this->tex != NULL) {
 			SDL_DestroyTexture(this->tex);
@@ -47,17 +47,17 @@ void TextBox::Render(SDL_Renderer* g) {
 		SDL_Color bgColor = { 10, 10, 10, 0 };
 		SDL_Surface* surf = TTF_RenderText_Shaded_Wrapped(this->font, this->text.c_str(), textColor, bgColor, 0);
 		if (surf == NULL) {
-			Surface::Render(g);
+			Surface::Render(p);
 			return;
 		}
 		fwidth = surf->w;
 		fheight = surf->h;
-		tex = SDL_CreateTextureFromSurface(g, surf);
+		tex = SDL_CreateTextureFromSurface(p->g, surf);
 		SDL_FreeSurface(surf);
 		this->dirty = false;
 	}
 	GetGlobalPositionTransform();
 	SDL_Rect rect{ this->globalPos.x, this->globalPos.y, fwidth, fheight };
-	SDL_RenderCopy(g, tex, NULL, &rect);
-	Surface::Render(g);
+	SDL_RenderCopy(p->g, tex, NULL, &rect);
+	Surface::Render(p);
 }
