@@ -26,15 +26,16 @@ Vec2D TextBox::RenderedBounds()
 {
 	return { (double)this->fwidth, (double)this->fheight };
 }
-TextBox::TextBox(int align) : Surface() {
+TextBox::TextBox(int align) : Renderable() {
 	this->localPos.x = 0;
 	this->localPos.y = 470;
 }
-TextBox::TextBox(int x, int y, int width, int height) : Surface() {
+TextBox::TextBox(int x, int y, int width, int height) : Renderable() {
 	this->localPos.x = x;
 	this->localPos.y = y;
 }
-void TextBox::Render(RenderParams* p) {
+void TextBox::OnRender(RenderParams* p)
+{
 	if (this->dirty) {
 		if (this->tex != NULL) {
 			SDL_DestroyTexture(this->tex);
@@ -47,7 +48,6 @@ void TextBox::Render(RenderParams* p) {
 		SDL_Color bgColor = { 10, 10, 10, 0 };
 		SDL_Surface* surf = TTF_RenderText_Shaded_Wrapped(this->font, this->text.c_str(), textColor, bgColor, 0);
 		if (surf == NULL) {
-			Surface::Render(p);
 			return;
 		}
 		fwidth = surf->w;
@@ -59,5 +59,5 @@ void TextBox::Render(RenderParams* p) {
 	GetGlobalPositionTransform();
 	SDL_Rect rect{ this->globalPos.x, this->globalPos.y, fwidth, fheight };
 	SDL_RenderCopy(p->g, tex, NULL, &rect);
-	Surface::Render(p);
+
 }

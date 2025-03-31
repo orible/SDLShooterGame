@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "hud.h"
 #include "surfacedrawable.h"
+#include "camera.h"
 
 bool Actor::computeInputVectors(SDL_Event event) {
 	switch (event.type) {
@@ -93,7 +94,11 @@ void Actor::Step(double dt, Node* parent) {
 		this->velocity.y += dir.y * impulse;
 	}
 
-	((DrawableSurface*)this->GetNode("/Camera/Base/DrawableMap"))->Add(this->globalPos);
+	Camera * cam = ((Camera*)this->GetNode("/Camera"));
+	cam->MoveCameraTowardsSpringy(this->globalPos);
+	//cam->MoveCamera(Vec2D{ 0, 1 });
+
+	//((DrawableSurface*)this->GetNode("/Camera/Base/DrawableMap"))->Add(this->globalPos);
 
 	/*if (mag > 0.0001f) {
 		Vec2D force = dirn;

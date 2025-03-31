@@ -276,12 +276,16 @@
     <ClCompile Include="mapimage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="packagesmanual\aubio\src\wscript_build">
       <Filter>aubio</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\player.bmp">
@@ -289,21 +293,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="controls.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="actor.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hud.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="surfacedrawable.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -503,6 +492,27 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="mapimage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="surfacedrawable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hud.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

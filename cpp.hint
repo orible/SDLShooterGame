@@ -1,0 +1,5 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define END_DECLARE_NODE(CLASS) };
+#define DECLARE_NODE(CLASS, BASE) class CLASS: public BASE { public: CLASS(): BASE() { this->nodetable.push_back(#CLASS); } const char* ClassName() { return #CLASS; }

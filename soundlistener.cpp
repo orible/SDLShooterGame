@@ -23,7 +23,7 @@ void SoundListener::Dispose()
     pEnumerator->Release();
     CoUninitialize();
 
-    Surface::Dispose();
+    Renderable::Dispose();
 }
 
 int SoundListener::Setup()
@@ -122,6 +122,9 @@ void SoundListener::Step(double dt, Node* parent) {
     UINT32 packetLength = 0;
     DWORD flags;
     
+    if (pCaptureClient == nullptr) {
+        return;
+    }
     //audioBuffer->clear();
 
     for (int i = 0; i < 2048; i++) {
@@ -326,8 +329,10 @@ int midi_to_y(int midiNote, int screenHeight) {
 void SoundListener::Render(SDL_Renderer* g) {
 
     System* sys = (System*)this->GetRoot();
-    int SCREEN_WIDTH = sys->ScreenWidth;
-    int SCREEN_HEIGHT = sys->ScreenHeight;
+    Box sz = sys->GetWindowSize("main");
+
+    int SCREEN_WIDTH = sz.width;
+    int SCREEN_HEIGHT = sz.height;
     int mag = 0;
     int width = 1024;
     int centerY = SCREEN_HEIGHT / 2;
@@ -393,5 +398,5 @@ int SoundListener::CaptureAudio()
 
 SoundListener::~SoundListener()
 {
-    Surface::Dispose();
+    Renderable::Dispose();
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL.h>
 #include "engine.h"
+
 class Renderer: Node2D
 {
 	struct RenderLayer {

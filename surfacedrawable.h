@@ -3,7 +3,7 @@
 
 #include "engine.h"
 
-class DrawableSurface : public Surface {
+class DrawableSurface : public Renderable {
 public:
 	struct TexPoint {
 		int x;
@@ -20,7 +20,7 @@ public:
 	void DoEvent(input_event_args* args);
 	void computeInputVectors(SDL_Event event);
 	void DrawThickLine(SDL_Renderer* renderer, float x1, float y1, float x2, float y2, int thickness);
-	void Render(RenderParams* p);
+	void OnRender(RenderParams* p);
 	DrawableSurface();
 };
 

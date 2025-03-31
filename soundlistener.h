@@ -7,7 +7,7 @@
 #include <avrt.h>
 #include <aubio.h>
 #include <map>
-class SoundListener: public Surface
+class SoundListener: public Renderable
 {
 	IMMDeviceEnumerator* pEnumerator = NULL;
 	IMMDevice* pDevice = NULL;

@@ -3,8 +3,8 @@
 
 void Renderer::Render(RenderParams* p, Node* node) {
 
-	if (node->Type == "SURFACE") {
-		node->Render(p);
+	if (node->InheritsFrom(Node2D::GetTypeName())) {
+		((Renderable*)node)->Render(p);
 	}
 
 	

@@ -3,14 +3,17 @@
 
 #include "engine.h"
 
-class MapImage: public Solid2D
+class MapImage: public Renderable
 {
+	CLASSNAME(MapImage);		
+	Sprite* mapImageSource;
 	std::vector<Sprite> chunks;
 	int chunkHeight;
 	int chunkWidth;
 
+public:
+	//static bool FromFile();
 	bool LoadMap(std::string path);
-	void Render(RenderParams * g);
 };
 
 

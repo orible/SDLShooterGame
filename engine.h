@@ -10,6 +10,30 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <map>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtx/transform2.hpp>  // For 2D transformations
+
+#define CLASSNAME(x) const char* ClassName() { return #x; }
+#define INIT_NODE(CLASS, BASE) CLASS(): BASE() { this->nodetable.push_back(#CLASS); } const char* ClassName() { return #CLASS; }
+#define DECLARE_NODE(CLASS, BASE) \
+	class CLASS: public BASE { \
+	public: \
+	CLASS(): BASE() { this->nodetable.push_back(#CLASS); } \
+	static const char* GetTypeName() { return #CLASS; } \
+	const char* ClassName() { return #CLASS; }
+#define END_DECLARE_NODE(CLASS) };
+
+#define DECLARE_BASE_NODE(CLASS) \
+	class CLASS { \
+	public: \
+	CLASS() { this->nodetable.push_back(#CLASS); } \
+	static const char* GetTypeName() { return #CLASS; } \
+	const char* ClassName() { return #CLASS; }
+
+int InitLibs();
 
 typedef struct {
 	double x, y;        // Center of the viewport in simulation space
@@ -24,65 +48,30 @@ typedef struct {
 	double x, y;
 } Point;
 
-struct RenderParams {
-	SDL_Renderer* g;
-};
-
 // Normalize between -π and π
 float NormalizeRotation(float rads);
 
 // Ensure the angle is between 0 and 2*π (0 to 360 degrees)
 float ClampRotation(float rads);
+#define Vec2D glm::vec2
 
-typedef struct Vec2D {
-	double x, y;
-	Vec2D operator -(Vec2D a) {
-		return { this->x - a.x, this->y- a.y };
+struct Box {
+	Vec2D pos;
+	int width;
+	int height;
+	void Zero() {
+		this->pos.x = 0;
+		this->pos.y = 0;
+		this->width = 0;
+		this->height = 0;
 	}
-	Vec2D operator +(Vec2D a) {
-		return { this->x + a.x, this->y + a.y };
-	}
-	Vec2D operator *(float scalar) const {
-		return { x * scalar, y * scalar };
-	}
-	// Vector subtraction
-	Vec2D operator-(const Vec2D& other) const {
-		return { x - other.x, y - other.y };
-	}
-	Vec2D Hadamard(Vec2D a) {
-		return { this->x * a.x, this->y * a.y };
-	}
-	float Cross(Vec2D a) {
-		return this->x * a.y - this->y * a.x;
-	}
-	float length() const {
-		return sqrt(x * x + y * y);
-	}
+};
 
-	/// <summary>
-	/// the measurement of how perpendicular a vector is to another one, if length of a or b vectors is 0 then the result is zero!
-	/// if the vector is the same or the same but mirrored the result is zero!
-	/// (1, 1) x (-1, -1) == 0	 
-	/// dot = 0: Vectors are perpendicular.
-	/// dot > 0: Vectors are pointing in the same general direction.
-	/// dot < 0 : Vectors are pointing in opposite directions.
-	/// </summary>
-	/// <param name="other"></param>
-	/// <returns></returns>
-	float Dot(const Vec2D& other) const {
-		return x * other.x + y * other.y;
-	}
-
-	// Rotate vector by an angle (radians)
-	Vec2D Rotate(float angle) const {
-		float cosTheta = std::cos(angle);
-		float sinTheta = std::sin(angle);
-		return {
-			x * cosTheta - y * sinTheta,
-			x * sinTheta + y * cosTheta
-		};
-	}
-} Vec2D;
+struct RenderParams {
+	SDL_Renderer* g;
+	SDL_Texture* layer;
+	SDL_Texture* Layer(Box* bhint);
+};
 
 typedef struct Transform: Vec2D {
 	float rads;
@@ -99,18 +88,6 @@ typedef struct VecInt2D {
 		return sqrt(x * x + y * y);
 	}
 } VecInt2D;
-
-struct Box {
-	Vec2D pos;
-	int width;
-	int height;
-	void Zero() {
-		this->pos.x = 0;
-		this->pos.y = 0;
-		this->width = 0;
-		this->height = 0;
-	}
-};
 
 typedef struct {
 	Box box;
@@ -152,19 +129,34 @@ typedef struct {
 	Vec2D dir;
 } input_event_args;
 
-class Node {
+class Node;
+typedef Node* NodeRef;
+
+DECLARE_BASE_NODE(Node) //{
 public:
-	int uuid;
+	//const char* ClassName() { throw "undefined ClassName"; }
+	
+	Node* root_Cached;
+	int uuid = GetUID();
 	std::string Id;
-	std::string Type;
+	//std::string Type;
 	bool isDead = false;
 	NodeType type = NodeType::NODE;
-	Node* parent;
+	Node* parent = NULL;
+	int index = 0;
+	
+	std::vector<std::string> nodetable;
+
+	//std::vector<std::unique_ptr<Node*>> children;
 	std::vector<Node*> children;
 	int GetUID();
 	void SetId(std::string Id);
 	void AddChild(Node* node);
+	void RemoveChild(NodeRef ref);
+	void RemoveSelf();
 	void SetParent(Node* parent);
+
+	bool InheritsFrom(const std::string&);
 
 	// called when added as child to another node
 	virtual void OnAddedToTree(Node* caller);
@@ -182,28 +174,44 @@ public:
 	virtual void Dispose();
 	virtual void DoEvent(input_event_args* args);
 	virtual void Step(double dt, Node* parent);
-	virtual void Render(RenderParams* p);
-	virtual void RenderGraph(RenderParams *p);
-	Node(Node* parent);
-	Node();
+	
+	//virtual void Render(RenderParams* p);
+	//virtual void RenderGraph(RenderParams *p);
+	~Node();
+	Node(Node* parent) : Node() {
+		//gctable.push_back(this);
+	};
 };
 
 void dumpError();
 
-class Node2D : public Node {
-public:
-	// rotation
+DECLARE_NODE(Node2D, Node)
 	float rads;
+
+	glm::mat4 localTransform;
+	glm::mat4 globalTransform;
+	Vec2D scale = { 1.0f, 1.0f };
+
+	enum NodeFlags {
+		NONE = 0,
+		SKIP_TRANSFORM = 1 << 0
+	} flags;
 
 	Vec2D localPos;
 	Vec2D globalPos;
 
+	static Vec2D lerp(const Vec2D& a, const Vec2D& b, float t);
 	long int CurTime();
 	int CurTime_Seconds();
+	glm::vec2 GetPositionFromMatrix(const glm::mat4& matrix);
+
+	void GetLocalTransform(); 
+
+	glm::mat4 GetGlobalPositionTransform();
 
 	Vec2D RotatePoint(Vec2D p, float a);
-	Transform GetGlobalPositionTransform();
 
+	//void UpdateGlobalTransform();
 	float GetLocalRotation();
 	float GetGlobalRotation();
 
@@ -212,65 +220,86 @@ public:
 		double sim_x, double sim_y,
 		double* screen_x, double* screen_y,
 		CameraData camera, int screen_width, int screen_height);
-	
-	void Render(RenderParams* p);
+
+	bool ShouldRender();
+	//void Render(RenderParams* p);
 	Vec2D GetLocalPos();
-	Node2D();
-};
+
+END_DECLARE_NODE(Node2D)
 
 /// <summary>
 /// Impliments solid checking for the node object
 /// </summary>
-class Solid2D : public Node2D {
+DECLARE_NODE(Solid2D, Node2D) 
 protected:
 	Box bounds;
 	virtual OBB GetOOBounds();
 	virtual Box GetAABounds();
+	bool ShouldRender();
 	void SetBounds(int width, int height);
 	bool ShouldCollide(Solid2D * caller);
 	bool RayIntersectsOBB(const Ray& ray, const OBB& obb, float& tEntry, float& tExit);
 	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir);
 };
 
-
 class Node2D_Test : public Node2D {
 public:
 	void Step(double dt, Node* parent);
 };
 
-class Surface : public Node2D {
+DECLARE_NODE(Renderable, Node2D)
 protected:
 	int texwidth;
 	int texheight;
 	int width; 
 	int height;
+	
 public:
+	//void GetTransformMatrix();
+	glm::mat4 GetGlobalPositionTransformWithCamera();
 	void Step(double dt, Node* parent);
-	//void Render(RenderParams* p);
+	virtual void OnRender(RenderParams* p);
+	virtual void Render(RenderParams* p) final;
 };
 
-class Sprite : public Surface {
+DECLARE_NODE(Sprite, Renderable)
 	//int width;
 	//int height;
 	SDL_Surface* surf;
 	SDL_Texture* texture;
 	std::string filename;
 public:
+	Sprite* CopyRegion(Box p);
 	void constructTexture(SDL_Renderer *p);
 	Box GetSpriteSize();
 	void SamplePoints(std::vector<Vec2D> *p); // RRGGBBAA
 	void Step(double dt, Node* parent);
-	void Render(RenderParams* p);
-	static Sprite* FromSprite(Sprite* sprite, int width, int height);
+
+	void OnRender(RenderParams* p);
+	void UpdateTextureInfo();
+	void Dispose();
 	static Sprite* FromDisk(std::string filename);
 };
 
-class Phys2D : public Solid2D {
+class AnimatedSprite : public Sprite {
+	std::map<std::string, Sprite*> animationTable;
+};
+
+DECLARE_NODE(Phys2D, Node2D)
 public:
+	enum ProcessFlags {
+		DO_GRAVITY = 1 << 0,
+		DO_FRICTION = 1 << 1,  // 0010
+		DO_COLLISION = 1 << 2,  // 0100
+	};
+	Solid2D* collider;
+	
 	double friction = 10;
 	Vec2D velocity;
 	Vec2D acceleration;
-	const float G = 10000; //6.674;
+	
+	const float G = 10000.0; //6.674;
+	int physFlags = 0;
 	// compute gravity
 	void do_gravity(double dt);
 	// compute friction

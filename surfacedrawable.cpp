@@ -22,7 +22,7 @@ void DrawableSurface::constructTexture(SDL_Renderer* g) {
 
 void DrawableSurface::DoEvent(input_event_args* args) {
 	//computeInputVectors(args->ev);
-	Surface::DoEvent(args);
+	Renderable::DoEvent(args);
 }
 
 void DrawableSurface::computeInputVectors(SDL_Event event) {
@@ -96,9 +96,11 @@ void DrawableSurface::DrawThickLine(SDL_Renderer* renderer, float x1, float y1, 
 	// Cleanup
 	SDL_DestroyTexture(lineTexture);
 }
-void DrawableSurface::Render(RenderParams* p) {
+
+void DrawableSurface::OnRender(RenderParams* p)
+{
 	constructTexture(p->g);
-	GetGlobalPositionTransform();
+	GetGlobalPositionTransformWithCamera();
 
 	bool isDirty = queue.size() > 0;
 
@@ -130,7 +132,6 @@ void DrawableSurface::Render(RenderParams* p) {
 	};
 	SDL_Rect src = { 0, 0, this->width, this->width};
 	SDL_RenderCopy(p->g, tex, &src, &dest);
-	Surface::Render(p);
 }
 
 DrawableSurface::DrawableSurface()

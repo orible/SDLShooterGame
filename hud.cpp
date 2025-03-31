@@ -10,8 +10,9 @@ void HUD::UpdatePerformance() {
 void HUD::OnAddedToTree(Node * caller) {
 	System* sys = (System*)this->GetRoot();
 	this->logo->SetText("Rhythm Runners");
-	this->logo->localPos.x = sys->ScreenWidth - 260;
-	this->logo->localPos.y = sys->ScreenHeight - 40;
+	Box sz = sys->GetWindowSize("main");
+	this->logo->localPos.x = sz.width - 260;
+	this->logo->localPos.y = sz.height - 40;
 
 	Vec2D v{ 0, sys->ScreenHeight - 80 };
 	this->inputInfo->SetLocalPos(v);
@@ -23,20 +24,21 @@ void HUD::OnAddedToTree(Node * caller) {
 	this->trackInfo->SetFontSize(48);
 }
 
-HUD::HUD() : Surface()
+HUD::HUD() : Renderable()
 {
 	//this->AddChild(this->perfInfo);
 	this->AddChild(this->debugInfo);
 	this->AddChild(this->inputInfo);
 	this->AddChild(this->drawSurfaceInfo);
 	this->AddChild(this->trackInfo);
+	this->AddChild(this->camInfo);
 }
 
-void HUD::Render(RenderParams* p) {
+void HUD::OnRender(RenderParams* p)
+{
 	perfInfo->Render(p);
 	logo->Render(p);
 	//debugInfo->Render(g);
 	//inputInfo->Render(g);
 	//drawSurfaceInfo->Render(g);
-	Surface::Render(p);
 }

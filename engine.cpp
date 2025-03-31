@@ -8,9 +8,29 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 #include "engine.h"
 #include "hud.h"
 #include <assert.h>
+#include "system.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+
+int InitLibs() {
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+		return -1;
+	}
+
+	if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+		return -1;
+	}
+
+	TTF_Init();
+
+	return 1;
+}
 
 // Normalize between -π and π
 float NormalizeRotation(float rads) {
@@ -56,6 +76,9 @@ Node* Node::GetNode(std::string query) {
 	// starts with "/"
 	if (tokens[0] == "") {
 		node = GetRoot();
+		if (tokens.size() == 2 && node->Id == tokens[1]) {
+			return node;
+		}
 	}
 	else {
 		node = this;
@@ -68,11 +91,27 @@ Node* Node::GetNode(std::string query) {
 	}
 	return node;
 }
+/// <summary>
+/// Gets the highest ancestor in the node tree
+/// If this has no parent it returns NULL!
+/// </summary>
+/// <returns></returns>
 Node* Node::GetRoot() {
+	if (root_Cached != NULL) {
+		return this->root_Cached;
+	}
+
+	// if no parent then just return null!
+	if (this->parent == NULL) {
+		return NULL;
+	}
+
 	Node* node = this;
 	while (node->parent != NULL) {
 		node = node->parent;
 	}
+
+	this->root_Cached = node;
 	return node;
 }
 Node* Node::GetChild(std::string Id) {
@@ -110,6 +149,10 @@ void Node::SetParent(Node* parent) {
 	if (this->isDead) return;
 	this->parent = parent;
 }
+bool Node::InheritsFrom(const std::string& str) 
+{
+	return std::find(this->nodetable.begin(), this->nodetable.end(), str) != this->nodetable.end();
+}
 void Node::OnAddedToTree(Node* parent)
 {
 	// do nothing
@@ -120,6 +163,7 @@ void Node::Step(double dt, Node* parent) {
 		this->children[i]->Step(dt, this);
 	}
 }
+/*
 void Node::Render(RenderParams* p) {
 	// do nothing is a stubby
 }
@@ -129,22 +173,26 @@ void Node::RenderGraph(RenderParams* p) {
 	for (int i = 0; i < this->children.size(); i++) {
 		this->children[i]->RenderGraph(p);
 	}
+}*/
+
+Node::~Node()
+{
+	this->Dispose();
 }
+
 void Node::AddChild(Node* node) {
 	if (this->isDead) return;
 	node->parent = this;
 	this->children.push_back(node);
 	node->OnAddedToTree(this);
 }
-Node::Node(Node* parent) {
-	this->uuid = GetUID();
-	this->parent = parent;
-	gctable.push_back(this);
+void Node::RemoveChild(NodeRef ref)
+{
+	this->children.erase(std::remove(this->children.begin(), this->children.end(), ref), this->children.end());
 }
-Node::Node() {
-	this->uuid = GetUID();
-	this->parent = NULL;
-	gctable.push_back(this);
+void Node::RemoveSelf()
+{
+	this->parent->RemoveChild(this);
 }
 
 void dumpError() {
@@ -161,6 +209,11 @@ int Node2D::CurTime_Seconds() {
 	return SDL_GetTicks() / 1000.0f;
 }
 
+glm::vec2 Node2D::GetPositionFromMatrix(const glm::mat4& matrix)
+{
+	return glm::vec2(matrix[3].x, matrix[3].y);
+}
+
 Vec2D Node2D::RotatePoint(Vec2D p, float a) {
 	float cosa = cos(a);
 	float sina = sin(a);
@@ -168,6 +221,13 @@ Vec2D Node2D::RotatePoint(Vec2D p, float a) {
 		p.x * cosa - p.y * sina,
 		p.x * sina + p.y * cosa,
 	};
+}
+
+void Node2D::GetLocalTransform()
+{
+	localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(localPos, 0.0f)) *
+		glm::rotate(glm::mat4(1.0f), rads, glm::vec3(0, 0, 1)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f));
 }
 	
 OBB Solid2D::GetOOBounds() {
@@ -178,11 +238,73 @@ OBB Solid2D::GetOOBounds() {
 }
 
 Box Solid2D::GetAABounds() {
-	return { localPos.x, localPos.y, 0, 0 };
+	return { }; //localPos.x, localPos.y, 0, 0 };
 }
 
+bool Solid2D::ShouldRender()
+{
+	return true;
+}
+
+glm::mat4 Renderable::GetGlobalPositionTransformWithCamera() {
+	Node* node = this->parent;
+
+	glm::mat4 mat = localTransform;
+
+	std::vector<glm::mat4> transforms;
+	// traverse node graph backwards and build a transform list
+	while (node != NULL) {
+		if (node->InheritsFrom(Node2D::GetTypeName())) {
+			Node2D * nd = (Node2D*)node;
+			transforms.push_back(nd->localTransform);
+		}
+		node = node->parent;
+	}
+
+	for (int i = transforms.size() - 1; i >= 0; i--) {
+		mat = transforms[i] * mat;
+	}
+
+	return mat;
+}
+
+glm::mat4 Node2D::GetGlobalPositionTransform() {
+	Node* node = this->parent;
+
+	while (node != NULL) {
+		if (node->InheritsFrom(Node2D::GetTypeName())) {
+			Node2D* nd = (Node2D*)node;
+			nd->InheritsFrom(Node::ClassName());
+			//return parent->GetGlobalPositionTransform() * this->GetLocalTransform();
+		}
+		node = node->parent;
+	}
+
+	// return GetLocalTransform();
+
+
+	glm::mat4 mat = localTransform;
+	std::vector<glm::mat4> transforms;
+	// traverse node graph backwards and build a transform list
+	while (node != NULL) {
+		if (node->InheritsFrom(Node2D::GetTypeName())) {
+			Node2D* nd = (Node2D*)node;
+			transforms.push_back(nd->localTransform);
+		}
+		node = node->parent;
+	}
+
+	for (int i = transforms.size() - 1; i >= 0; i--) {
+		mat = transforms[i] * mat;
+	}
+
+	return mat;
+}
+
+/*
 // get parent transform matrix graph
-Transform Node2D::GetGlobalPositionTransform()
+// DOES NOT include the camera object if one is found!
+glm::mat4 Node2D::GetGlobalPositionTransform()
 {
 	Transform transform;
 	transform = this->localPos;
@@ -198,6 +320,16 @@ Transform Node2D::GetGlobalPositionTransform()
 	// traverse node graph backwards and build a transform list
 	while (node != NULL) {
 		if (node->Type == "NODE2D") {
+			if (((Node2D*)node)->flags & NodeFlags::SKIP_TRANSFORM) {
+				// skip flag set so skip it
+				node = node->parent;
+				continue;
+			}
+			if (((Node2D*)node)->Id == "Camera") {
+				// do not factor the camera into the transform
+				node = node->parent;
+				continue;
+			}
 			Vec2D rotatedTransform = RotatePoint(((Node2D*)node)->localPos, ((Node2D*)node)->rads);
 			transform.x += rotatedTransform.x;
 			transform.y += rotatedTransform.y;
@@ -213,8 +345,8 @@ Transform Node2D::GetGlobalPositionTransform()
 	this->globalPos.y = transform.y;
 
 	//this->globalPos = this->localPos;
-	return transform; //this->globalPos;
-}
+	return glm::mat4(1.0f); //this->globalPos;
+}*/
 
 float Node2D::GetLocalRotation() {
 	return rads;
@@ -225,7 +357,7 @@ float Node2D::GetGlobalRotation()
 	Node* node = this->parent;
 	float rads = this->rads;
 	while (node != NULL) {
-		if (node->Type == "NODE2D") {
+		if (node->InheritsFrom(Node2D::GetTypeName())) {
 			rads += ((Node2D*)node)->rads;
 		}
 		node = node->parent;
@@ -256,7 +388,7 @@ bool Solid2D::ShouldCollide(Solid2D* caller)
 
 bool Solid2D::RayIntersectsOBB(const Ray& ray, const OBB& obb, float& tEntry, float& tExit) {
 	// Step 1: Compute the local-space ray
-	Vec2D rayOriginLocal = (ray.origin - obb.center).Rotate(-obb.rotation);
+	/*Vec2D rayOriginLocal = (ray.origin - obb.center).Rotate(-obb.rotation);
 	Vec2D rayDirectionLocal = ray.direction.Rotate(-obb.rotation);
 
 	// Step 2: Perform AABB-Ray intersection in local space
@@ -278,7 +410,8 @@ bool Solid2D::RayIntersectsOBB(const Ray& ray, const OBB& obb, float& tEntry, fl
 	tExit = std::min(tMaxX, tMaxY);
 
 	// Step 3: Check if intersection exists
-	return tEntry <= tExit && tExit > 0.0f;
+	return tEntry <= tExit && tExit > 0.0f;*/
+	return false;
 }
 
 void Solid2D::RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
@@ -286,23 +419,35 @@ void Solid2D::RaycastSearch(std::string filter, Vec2D origin, Vec2D dir) {
 	//(Node2D*)nodeRoot;
 }
 
+bool Node2D::ShouldRender()
+{
+	return true;
+}
+
+/*
 void Node2D::Render(RenderParams* p)
 {
 	Node::Render(p);
-}
+}*/
 
 Vec2D Node2D::GetLocalPos() {
 	//ToScreen(pos.x, pos.y, &point.x, &point.y, camera, screen.width, screen.height);
 	return this->localPos;
 }
 
-Node2D::Node2D(): Node()
-{
-	this->Type = "NODE2D";
+void Renderable::Step(double dt, Node* parent) {
+	Node2D::Step(dt, this);
 }
 
-void Surface::Step(double dt, Node* parent) {
-	Node2D::Step(dt, this);
+void Renderable::OnRender(RenderParams* p)
+{
+	//throw "stubby";
+}
+
+void Renderable::Render(RenderParams* p)
+{
+	GetGlobalPositionTransformWithCamera();
+	this->OnRender(p);
 }
 
 void Sprite::constructTexture(SDL_Renderer* g) {
@@ -313,7 +458,7 @@ void Sprite::constructTexture(SDL_Renderer* g) {
 			return;
 		}
 		// query deets
-		SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+		UpdateTextureInfo();
 
 		// dump surface out of memory
 		SDL_FreeSurface(surf);
@@ -322,8 +467,41 @@ void Sprite::constructTexture(SDL_Renderer* g) {
 
 Box Sprite::GetSpriteSize()
 {
+	constructTexture(((System*)this->GetRoot())->GetRenderParams().g);
+
 	// TODO: fix this by using box not vec2D as it's narrowing an int to double!!
 	return Box{ Vec2D{0, 0}, this->texwidth, this->texheight };
+}
+
+Vec2D Node2D::lerp(const Vec2D& a, const Vec2D& b, float t)
+{
+	return a + (b - a) * t;
+}
+
+/// <summary>
+///	Read sprite memory and copy part of or all of it's texture
+/// </summary>
+/// <param name="sprite"></param>
+/// <returns></returns>
+Sprite* Sprite::CopyRegion(Box p)
+{
+	SDL_Renderer *g = ((System*)this->GetRoot())->GetRenderParams().g;
+	SDL_Texture *tex = SDL_CreateTexture(g, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_TARGET, p.width, p.height);
+
+	SDL_SetRenderTarget(g, tex);
+	SDL_SetRenderDrawColor(g, 100, 100, 100, 0);
+	SDL_RenderClear(g);
+
+	SDL_Rect r{ p.pos.x, p.pos.y, p.width, p.height };
+	SDL_RenderCopy(g, this->texture, &r, NULL);
+	
+	SDL_SetRenderTarget(g, NULL);
+
+	Sprite *sp = new Sprite();
+	sp->texture = tex;
+	sp->UpdateTextureInfo();
+
+	return sp;
 }
 
 void Sprite::SamplePoints(std::vector<Vec2D> *p)
@@ -339,21 +517,19 @@ void Sprite::SamplePoints(std::vector<Vec2D> *p)
 
 	Uint32* upixels = (Uint32*)pixels;
 
-	for (int i = 0; i < width * height; i++) {
-		
-	}
+	//for (int i = 0; i < width * height; i++) {}
 
 	SDL_UnlockTexture(this->texture);
 }
 void Sprite::Step(double dt, Node* parent) {
-	this->rads = cos(CurTime() / 1000.f);
+	//this->rads = cos(CurTime() / 1000.f);
 	//printf("%d\n", this->rads);
 	Node2D::Step(dt, parent);
 }
-void Sprite::Render(RenderParams *p) {
+void Sprite::OnRender(RenderParams *p) {
 	// assert texture is constructed all lazy like probably boils to EQ idk, TODO: inspect the assemblr
 	constructTexture(p->g);
-	Vec2D transform = GetGlobalPositionTransform();
+	glm::mat4 transform = GetGlobalPositionTransformWithCamera();
 
 	//double x = this->globalPos.x;
 	//double y = this->globalPos.y;
@@ -361,32 +537,43 @@ void Sprite::Render(RenderParams *p) {
 	//double x = ((Node2D*)this->parent)->pos.x + this->pos.x;
 	//double y = ((Node2D*)this->parent)->pos.y + this->pos.y;
 
+	glm::vec3 p1 = glm::vec3(transform[3]);
+
 	// compute transient fields
-	SDL_Rect dstrect = { transform.x, transform.y, width, height };
+	SDL_Rect dstrect = { p1.x, p1.y, this->texwidth, this->texheight };
 	SDL_RenderCopyEx(p->g, this->texture, NULL, &dstrect, this->rads * (100.0f / M_PI), NULL, SDL_FLIP_NONE);
-	Surface::Render(p);
 }
 
-/// <summary>
-///	Read sprite memory and copy part of or all of it's texture
-/// </summary>
-/// <param name="sprite"></param>
-/// <returns></returns>
-Sprite* Sprite::FromSprite(Sprite* sprite, int width, int height)
+void Sprite::UpdateTextureInfo()
 {
-	return nullptr;
+	SDL_QueryTexture(texture, NULL, NULL, &texwidth, &texheight);
+}
+
+void Sprite::Dispose()
+{
+	if (this->texture != NULL) {
+		SDL_DestroyTexture(this->texture);
+	}
 }
 
 Sprite* Sprite::FromDisk(std::string filename) {
 	Sprite* sp = new Sprite();
 	sp->filename = filename;
-	sp->surf = SDL_LoadBMP(("./assets/" + filename).c_str());
+	sp->surf = IMG_Load(("./assets/" + filename).c_str());
+	//sp->surf = SDL_LoadBMP(("./assets/" + filename).c_str());
 	return sp;
 }
 
 void Phys2D::do_gravity(double dt) {
+	//Vec2D v1 = { 0, -100 };
 	Vec2D v1 = { 0, -100 };
-	Vec2D v2 = GetGlobalPositionTransform(); //this->localPos;
+	//Vec2D v2 = GetGlobalPositionTransform(); //this->localPos;
+
+	glm::mat4 mat= GetGlobalPositionTransform();
+
+	glm::vec3 v2(mat[3]);
+
+
 	Vec2D d = { v2.x - v1.x, v2.y - v1.y };
 
 	float m1 = 10;
@@ -455,4 +642,9 @@ void Node2D_Test::Step(double dt, Node* parent)
 	//this->localPos.y += cos(CurTime() / 1000.f) * 100.0f * dt;
 	//this->rads = cos(CurTime() / 1000.f);
 	Node2D::Step(dt, parent);
+}
+
+SDL_Texture* RenderParams::Layer(Box* bhint)
+{
+	return nullptr;
 }

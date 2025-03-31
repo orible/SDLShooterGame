@@ -2,7 +2,7 @@
 #define CONTROLS_H
 #include "engine.h"
 
-class TextBox : public Surface {
+class TextBox : public Renderable {
 	TTF_Font* font;
 	SDL_Texture* tex;
 	bool dirty = true;
@@ -17,7 +17,7 @@ public:
 	Vec2D RenderedBounds();
 	TextBox(int align);
 	TextBox(int x, int y, int width, int height);
-	void Render(RenderParams* p);
+	void OnRender(RenderParams* p);
 };
 
 #endif
