@@ -16,8 +16,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 //#include <glm/gtx/transform2.hpp>  // For 2D transformations
 
-#define CLASSNAME(x) const char* ClassName() { return #x; }
-#define INIT_NODE(CLASS, BASE) CLASS(): BASE() { this->nodetable.push_back(#CLASS); } const char* ClassName() { return #CLASS; }
+//#define CLASSNAME(x) const char* ClassName() { return #x; }
+//#define INIT_NODE(CLASS, BASE) CLASS(): BASE() { this->nodetable.push_back(#CLASS); } const char* ClassName() { return #CLASS; }
 #define DECLARE_NODE(CLASS, BASE) \
 	class CLASS: public BASE { \
 	public: \

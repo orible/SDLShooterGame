@@ -4,8 +4,7 @@
 #include <SDL.h>
 #include "engine.h";
 
-class Camera: public Renderable
-{
+DECLARE_NODE(Camera, Renderable)
 	float scale = 0;
 	int springWindowEnvelope = .8;
 	enum Mode {
