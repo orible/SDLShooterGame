@@ -4,9 +4,11 @@
 // engine.h: This file contains the 'main' function. Program execution begins and ends there.
 //
 
-class HUD : public Renderable {
-	CLASSNAME(HUD);
+Vec2D FromScreen(Box scr, float x, float y);
+
+DECLARE_NODE(HUD, Renderable)
 public:
+	// children to draw
 	TextBox* debugInfo = new TextBox(0, 0, 100, 100);
 	TextBox* inputInfo = new TextBox(250, 0, 100, 100);
 	TextBox* drawSurfaceInfo = new TextBox(400, 400, 100, 100);
@@ -14,11 +16,10 @@ public:
 	TextBox* camInfo = new TextBox(400, 0, 100, 100);
 	TextBox* logo = new TextBox(0, 0, 0, 0);
 	TextBox* trackInfo = new TextBox(0, 0, 0, 0);
-
+	// funcs
+	HOOK(void, OnAddedToTree, (Node* caller), (caller));
+	HOOK(void, OnCreated, (), ());
 	void UpdatePerformance();
-	void OnAddedToTree(Node* caller);
-	HUD();
-	void OnRender(RenderParams* p);
-};
+END_DECLARE_NODE()
 
 #endif

@@ -1,10 +1,10 @@
 #ifndef H_ACTOR
 #define H_ACTOR
 #include "engine.h"
-
+#include "controls.h"
 // engine.h: This file contains the 'main' function. Program execution begins and ends there.
 //
-class Actor : public Phys2D {
+DECLARE_NODE(Actor, Phys2D)
 	Sprite* sprite;
 	Vec2D dir = { 0, 0 };
 	Vec2D dirn = { 0, 0 };
@@ -23,20 +23,13 @@ class Actor : public Phys2D {
 	int actions[5] = {
 		INACTIVE, INACTIVE, INACTIVE ,INACTIVE, INACTIVE
 	};
+	TextBox* info = new TextBox(1, 1, 100, 100);
 public:
-	/// <summary>
 	/// read keys in event buffer
-	/// </summary>
-	/// <param name="event"></param>
-	/// <returns></returns>
 	bool computeInputVectors(SDL_Event event);
-
 	void DoEvent(input_event_args* args);
-	void Step(double dt, Node* parent);
-
-	Actor();
-
-	//Sprite * sprite = new Sprite();
-};
+	HOOK(void, OnStep, (double dt, Node* parent), (dt, parent));
+	void OnCreated();
+END_DECLARE_NODE();
 
 #endif

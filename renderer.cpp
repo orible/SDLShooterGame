@@ -1,12 +1,11 @@
 #include "renderer.h"
 
 
-void Renderer::Render(RenderParams* p, Node* node) {
+void Renderer::Render(RenderCtx* p, Node* node) {
 
-	if (node->InheritsFrom(Node2D::GetTypeName())) {
+	if (node->InheritsFrom(Node2D::GetClassName())) {
 		((Renderable*)node)->Render(p);
 	}
-
 	
 	SDL_Texture* tex = SDL_CreateTexture(p->g, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1000, 1000);
 	SDL_SetRenderTarget(p->g, tex);
@@ -19,18 +18,11 @@ void Renderer::Render(RenderParams* p, Node* node) {
 	this->stack1->push_back(RenderLayer{ 0, tex });
 }
 
-void Renderer::DeferredRender(RenderParams* p)
+void Renderer::DeferredRender(RenderCtx* p)
 {
 	this->stack1->clear();
 	this->Render(p, this);
 	for (int i = 0; i < this->stack1->size(); i++) {
 		//SDL_RenderCopyEx(g, tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
 	}
-
-}
-
-Renderer::Renderer()
-{
-	this->stack1 = new std::vector<RenderLayer>();
-	this->stack2 = new std::vector<RenderLayer>();
 }

@@ -33,40 +33,39 @@ System * nodeRoot = NULL;
 
 int main(int argc, char* args[])
 {
-	
-	nodeRoot = new System();
+	nodeRoot = Node::New<System>();
 	nodeRoot->SetId("Root");
 	nodeRoot->ScreenWidth = 1000;
 	nodeRoot->ScreenHeight = 1000;
-
 	nodeRoot->InitEngine();
-
-	Node* cam = new Camera();
+	
+	Node* cam = Node::New<Camera>();
 	cam->SetId("Camera");
 	nodeRoot->AddChild(cam);
 
-	Node* base = new Node();
-	base->SetId("Base");
-	cam->AddChild(base);
+	// hud goes in last as it's on top!
+	Node* hud = Node::New<HUD>();
+	hud->SetId("DebugHUD");
+	cam->AddChild(hud);
 
-	//Node* map = new DrawableSurface();
-	//map->SetId("DrawableMap");
-	//base->AddChild(map);
+	//Node* base = new Node();
+	//base->SetId("Base");
+	//cam->AddChild(base);
 
-	//MapImage* map2 = new MapImage();
-	//base->AddChild(map2);
-	//map2->LoadMap("/map/map_1.png");
+	//Actor* a = Node::New<Actor>();
+	//a->SetLocalPos({ 100, 100 });
+	//nodeRoot->AddChild(a);
 
-	//SoundListener* listener = new SoundListener();
-	//listener->Setup();
-	//nodeRoot->AddChild(listener);
+	nodeRoot->AddChild(Node::New<MapImage>());
 
-	nodeRoot->AddChild(new Actor());
-
-	//base->GetNode("/PlayHUD");
+	nodeRoot->AddChild(Node::New<Actor>());
 	nodeRoot->RunEngine();
-
 	nodeRoot->Dispose();
+	
+	//nodeRoot->AddChild(Sprite::FromDisk("./player.bmp"));
+	//nodeRoot->AddChild(Sprite::FromDisk("./player.bmp"));
+
+	delete nodeRoot;
 
 	return 0;
 }

@@ -1,8 +1,11 @@
 #include "mapimage.h"
 
+void MapImage::_OnAddedToTree(Node*caller) {
+	this->LoadMap("./assets/map_1.png");
+}
+
 bool MapImage::LoadMap(std::string path)
 {
-	GetRoot();
 	
 	chunkWidth = 600;
 	chunkHeight = 600;
@@ -24,7 +27,7 @@ bool MapImage::LoadMap(std::string path)
 		for (int x = 0; x < numWidth; x++) {
 			Sprite * region = mapImageSource->CopyRegion(Box{ Vec2D{ 
 				(double)x * chunkWidth, 
-				(double)y * chunkWidth }, chunkWidth, chunkHeight });
+				(double)y * chunkWidth }, (float)chunkWidth, (float)chunkHeight });
 			if (region == NULL) {
 				break;
 			}

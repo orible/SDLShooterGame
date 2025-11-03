@@ -14,24 +14,37 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtx/transform2.hpp>  // For 2D transformations
-
+#include <functional>
 //#define CLASSNAME(x) const char* ClassName() { return #x; }
 //#define INIT_NODE(CLASS, BASE) CLASS(): BASE() { this->nodetable.push_back(#CLASS); } const char* ClassName() { return #CLASS; }
+
 #define DECLARE_NODE(CLASS, BASE) \
 	class CLASS: public BASE { \
-	public: \
+	using super = BASE; \
+	friend Node; \
+	protected: \
 	CLASS(): BASE() { this->nodetable.push_back(#CLASS); } \
-	static const char* GetTypeName() { return #CLASS; } \
+	public:	\
+	static const char * GetClassName() { return #CLASS; } \
 	const char* ClassName() { return #CLASS; }
+
+#define HOOK(RET, name, ARGS, call) \
+    RET name ARGS override { \
+        super::name call; \
+        _##name call; \
+    } \
+	RET _##name ARGS
+
 #define END_DECLARE_NODE(CLASS) };
 
 #define DECLARE_BASE_NODE(CLASS) \
 	class CLASS { \
-	public: \
+	protected: \
 	CLASS() { this->nodetable.push_back(#CLASS); } \
-	static const char* GetTypeName() { return #CLASS; } \
-	const char* ClassName() { return #CLASS; }
+	public: \
+	static const char* GetClassName() { return #CLASS; } \
+	virtual const char* ClassName() { return #CLASS; }
+
 
 int InitLibs();
 
@@ -57,8 +70,8 @@ float ClampRotation(float rads);
 
 struct Box {
 	Vec2D pos;
-	int width;
-	int height;
+	float width;
+	float height;
 	void Zero() {
 		this->pos.x = 0;
 		this->pos.y = 0;
@@ -67,8 +80,10 @@ struct Box {
 	}
 };
 
-struct RenderParams {
+struct RenderCtx {
 	SDL_Renderer* g;
+	glm::mat4 M_proj;
+	glm::mat4 M_view;
 	SDL_Texture* layer;
 	SDL_Texture* Layer(Box* bhint);
 };
@@ -129,37 +144,46 @@ typedef struct {
 	Vec2D dir;
 } input_event_args;
 
-class Node;
+class Node; // forward declare clas s name so we can make the ref type before the class exists
 typedef Node* NodeRef;
 
-DECLARE_BASE_NODE(Node) //{
-public:
-	//const char* ClassName() { throw "undefined ClassName"; }
-	
+DECLARE_BASE_NODE(Node)
 	Node* root_Cached;
-	int uuid = GetUID();
 	std::string Id;
-	//std::string Type;
-	bool isDead = false;
-	NodeType type = NodeType::NODE;
-	Node* parent = NULL;
+	int uuid = GetUID();
 	int index = 0;
-	
-	std::vector<std::string> nodetable;
 
 	//std::vector<std::unique_ptr<Node*>> children;
 	std::vector<Node*> children;
+
+	bool isDead = false;
+	
+	NodeType type = NodeType::NODE;
+	Node* parent = NULL;
+
+	std::vector<std::string> nodetable;
+
+	bool _TraverseForwards(Node* node, const std::function<bool(Node*)>& cb);
+	bool TraverseForwards(const std::function<bool(Node*)>& cb);
+	void TraverseBackwards(const std::function<void(Node* node)>);
+
 	int GetUID();
 	void SetId(std::string Id);
+
+	void SetParent(Node* parent);
 	void AddChild(Node* node);
 	void RemoveChild(NodeRef ref);
 	void RemoveSelf();
-	void SetParent(Node* parent);
+
+	//void OnCreating();
+	//void OnParentChanged();
+	virtual void OnCreated() {}
+	virtual void OnDestroying() {}
 
 	bool InheritsFrom(const std::string&);
 
 	// called when added as child to another node
-	virtual void OnAddedToTree(Node* caller);
+	virtual void OnAddedToTree(Node* caller) {}
 	
 	/// <summary>
 	/// Search for Node in graph if it starts with "/" then search from the Root else search from this nodes children
@@ -167,29 +191,37 @@ public:
 	/// </summary>
 	/// <param name="query"></param>
 	/// <returns></returns>
+	/// 
 	Node* GetNode(std::string query);
 	Node* GetRoot();
 	Node* GetChild(std::string Id);
 	Node* GetParent(std::string Id);
 	virtual void Dispose();
 	virtual void DoEvent(input_event_args* args);
-	virtual void Step(double dt, Node* parent);
+	virtual void OnStep(double dt, Node* parent);
 	
-	//virtual void Render(RenderParams* p);
-	//virtual void RenderGraph(RenderParams *p);
+	//template<class T, class... Args>
+	//static std::unique_ptr<T> CreateNode(Args&&... args) {
+	//	auto p = std::make_unique<T>(std::forward<Args>(args)...);
+	//	p->OnCreated();
+	//	return p;
+	//}
+
+	template<class T, class... Args>
+	static T* New(Args&&... args) {
+		T* p = new T();
+		p->OnCreated();
+		return p;
+	}
+
 	~Node();
-	Node(Node* parent) : Node() {
-		//gctable.push_back(this);
-	};
+	Node(Node* parent);
 };
 
 void dumpError();
 
 DECLARE_NODE(Node2D, Node)
-	float rads;
-
-	glm::mat4 localTransform;
-	glm::mat4 globalTransform;
+	float rot;
 	Vec2D scale = { 1.0f, 1.0f };
 
 	enum NodeFlags {
@@ -197,39 +229,37 @@ DECLARE_NODE(Node2D, Node)
 		SKIP_TRANSFORM = 1 << 0
 	} flags;
 
-	Vec2D localPos;
-	Vec2D globalPos;
+	Vec2D localPos = { 0, 0 };
+	//Vec2D globalPos = { 0, 0 };
+	Vec2D pivot = { 0, 0 };
 
 	static Vec2D lerp(const Vec2D& a, const Vec2D& b, float t);
 	long int CurTime();
 	int CurTime_Seconds();
+
 	glm::vec2 GetPositionFromMatrix(const glm::mat4& matrix);
 
-	void GetLocalTransform(); 
-
-	glm::mat4 GetGlobalPositionTransform();
+	glm::mat4 GetLocalTransform(); 
+	glm::mat4 GetWorldTransform();
+	glm::vec2 GetWorldPos();
+	glm::vec2 WorldToLocal(const glm::vec2& worldPos, Node2D* parent);
 
 	Vec2D RotatePoint(Vec2D p, float a);
-
-	//void UpdateGlobalTransform();
 	float GetLocalRotation();
 	float GetGlobalRotation();
-
 	void SetLocalPos(Vec2D p);
 	float ToScreen(
 		double sim_x, double sim_y,
 		double* screen_x, double* screen_y,
 		CameraData camera, int screen_width, int screen_height);
-
 	bool ShouldRender();
-	//void Render(RenderParams* p);
 	Vec2D GetLocalPos();
 
 END_DECLARE_NODE(Node2D)
 
 /// <summary>
 /// Impliments solid checking for the node object
-/// </summary>
+/// </summary>a
 DECLARE_NODE(Solid2D, Node2D) 
 protected:
 	Box bounds;
@@ -242,24 +272,22 @@ protected:
 	void RaycastSearch(std::string filter, Vec2D origin, Vec2D dir);
 };
 
-class Node2D_Test : public Node2D {
-public:
-	void Step(double dt, Node* parent);
-};
-
 DECLARE_NODE(Renderable, Node2D)
 protected:
 	int texwidth;
 	int texheight;
 	int width; 
 	int height;
-	
+	glm::vec2 rLocal;
+	glm::vec4 p0;
 public:
 	//void GetTransformMatrix();
 	glm::mat4 GetGlobalPositionTransformWithCamera();
-	void Step(double dt, Node* parent);
-	virtual void OnRender(RenderParams* p);
-	virtual void Render(RenderParams* p) final;
+	virtual void OnRender(RenderCtx* p) {};
+	virtual void OnRenderEnd(RenderCtx* p) {};
+	// render entry DO NOT OVERRIDE
+	// if you want to add your own render logic, HOOK or overwrite OnRender
+	void Render(RenderCtx* p);
 };
 
 DECLARE_NODE(Sprite, Renderable)
@@ -273,15 +301,14 @@ public:
 	void constructTexture(SDL_Renderer *p);
 	Box GetSpriteSize();
 	void SamplePoints(std::vector<Vec2D> *p); // RRGGBBAA
-	void Step(double dt, Node* parent);
-
-	void OnRender(RenderParams* p);
+	HOOK(void, OnStep, (double dt, Node* parent), (dt, parent));
+	HOOK(void, OnRender, (RenderCtx* p), (p));
 	void UpdateTextureInfo();
 	void Dispose();
 	static Sprite* FromDisk(std::string filename);
 };
 
-class AnimatedSprite : public Sprite {
+DECLARE_NODE(AnimatedSprite, Sprite)
 	std::map<std::string, Sprite*> animationTable;
 };
 
@@ -304,7 +331,7 @@ public:
 	void do_gravity(double dt);
 	// compute friction
 	void do_friction(double dt);
-	void Step(double dt, Node* parent);
+	HOOK(void, OnStep, (double dt, Node* parent), (dt, parent));
 };
 
 #endif

@@ -72,12 +72,14 @@ void Actor::DoEvent(input_event_args* args) {
 	Phys2D::DoEvent(args);
 }
 
-void Actor::Step(double dt, Node* parent) {
+void Actor::_OnStep(double dt, Node* parent) {
 	dir.x = (actions[Actions::RIGHT] ? 1.0f : 0.0f) - (actions[Actions::LEFT] ? 1.0f : 0.0f); // Right - Left
 	dir.y = (actions[Actions::DOWN] ? 1.0f : 0.0f) - (actions[Actions::UP] ? 1.0f : 0.0f); // Down - Up
 
+	this->info->SetTextF("X/Y: %f, %f", this->localPos.x, this->localPos.y);
 	float mag = sqrtf(dir.x * dir.x + dir.y * dir.y);
-	((HUD*)this->GetNode("/DebugHUD"))->inputInfo->SetTextF("W[%c] S[%c] A[%c] D[%c] SPACE[?] %f\nAxis: (%f,%f)",
+	HUD*hud = ((HUD*)this->GetNode("/*/DebugHUD"));
+	hud->inputInfo->SetTextF("W[%c] S[%c] A[%c] D[%c] SPACE[?] %f\nAxis: (%f,%f)",
 		this->dir.y < 0 ? 'X' : '_',
 		this->dir.y > 0 ? 'X' : '_',
 		this->dir.x < 0 ? 'X' : '_',
@@ -94,26 +96,13 @@ void Actor::Step(double dt, Node* parent) {
 		this->velocity.y += dir.y * impulse;
 	}
 
-	Camera * cam = ((Camera*)this->GetNode("/Camera"));
-	cam->MoveCameraTowardsSpringy(this->globalPos);
-	//cam->MoveCamera(Vec2D{ 0, 1 });
-
-	//((DrawableSurface*)this->GetNode("/Camera/Base/DrawableMap"))->Add(this->globalPos);
-
-	/*if (mag > 0.0001f) {
-		Vec2D force = dirn;
-		force.x /= mag;
-		force.y /= mag;
-		// add force
-		this->velocity.x += force.x * impulse;
-		this->velocity.y += force.y * impulse;
-	}*/
-
-	Phys2D::Step(dt, parent);
+	Camera * cam = ((Camera*)this->GetNode("/*/Camera"));
+	cam->MoveCameraTowardsSpringyWorld(GetWorldPos());
 }
 
-Actor::Actor() : Phys2D() {
+void Actor::OnCreated() {
 	this->sprite = Sprite::FromDisk("./player.bmp");
 	// this will set the sprite parent and hook it as a child that is auto executed on step, render etc
 	this->AddChild(sprite);
+	this->AddChild(info);
 }

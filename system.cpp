@@ -5,6 +5,7 @@
 #include <SDL_ttf.h>
 #include "hud.h"
 #include <algorithm>
+#include "camera.h"
 
 void printspaces(int s) {
 	int x;
@@ -38,40 +39,52 @@ int System::RenderNode(Node* node, int d)
 	return 0;
 }
 
-int System::RenderNodeQueuedSortByZIndex(std::vector<Layer> *queue, Node *node, int depth) {
+// collate draw queue of renderable items that need to be drawn!
+void System::RenderNodeQueuedSortByZIndex(std::vector<Layer> *queue, Node *node, int depth) {
 	printspaces(depth);
 	printf("> NODE (Cls: %s) (Id: %s)\n", node->ClassName(), node->Id.c_str());
 
-	if (!node->isDead && node->InheritsFrom(Renderable::GetTypeName())) {
+	// get is renderable node with draw logic
+	// if it is we add it to the render cue to run the render logic
+	if (!node->isDead && node->InheritsFrom(Renderable::GetClassName())) {
 		queue->push_back(Layer{ nullptr, index = node->index, node });
 	}
-
-	int o = 0;
 	for (int i = 0; i < node->children.size(); i++) {
-		Node* nd = node->children[i];
-
-		// check if node and we can assert visibility
-		if (nd->InheritsFrom(Node2D::GetTypeName())) {
-			if (((Node2D*)nd)->ShouldRender()) {
-				this->RenderNodeQueuedSortByZIndex(queue, nd, depth + 1);
-				continue;
-			}
-		}
-		o += this->RenderNodeQueuedSortByZIndex(queue, nd, depth + 1);
+		this->RenderNodeQueuedSortByZIndex(queue, node->children[i], depth + 1);
 	}
-	return o;
 }
 
 int System::QueuedRender() {
 	printf("========\nRender Start\n========\n");
 	std::vector<Layer> queue = {};
 	RenderNodeQueuedSortByZIndex(&queue, this, 0);
+	
+	// sort render queue by zindex hints
 	std::sort(queue.begin(), queue.end(), [](Layer a, Layer b) {
 		return a.index < b.index;
 	});
-	RenderParams params = this->GetRenderParams();
+
+	// get render param object
+	RenderCtx params = this->GetRenderParams();
+	
+	// Get first camera
+	Camera* cam = (Camera*)this->GetChild("Camera");
+	
+	int pixelsPerUnit = 1;
+	params.M_view = cam->GetViewMatrix();
+	params.M_proj = glm::translate(glm::mat4(1), { ScreenWidth * 0.5f, ScreenHeight * 0.5f, 0 }) *
+		glm::scale(glm::mat4(1), { pixelsPerUnit, pixelsPerUnit, 1 }); // Y down
+
+	// front to back of sorted render queue, call render function
 	for (std::vector<Layer>::iterator it = queue.begin(); it != queue.end(); ++it) {
-		((Renderable*)it->node)->Render(&params);
+		// get renderable node
+		Renderable *r = (Renderable*)it->node;
+		
+		//compute if bounds are visible
+		cam->GetInFustrum(r);
+
+		// render
+		r->Render(&params);
 	}
 	return queue.size();
 }
@@ -83,9 +96,9 @@ int System::DeferredRender()
 	return 0;
 }
 
-RenderParams System::GetRenderParams()
+RenderCtx System::GetRenderParams()
 {
-	return RenderParams { renderer };
+	return RenderCtx{ renderer };
 }
 
 int System::RunEngine() {
@@ -101,14 +114,12 @@ int System::RunEngine() {
 
 	bool isRunning = true;
 
-	// hud goes in last as it's on top!
-	Node* hud = new HUD();
-	hud->SetId("DebugHUD");
-	this->AddChild(hud);
+	HUD *hud = (HUD*)GetNode("/Camera/DebugHUD");
+
 	
 	eventbuf* evbuf = new eventbuf;
 
-	RenderParams renderParams{ renderer };
+	RenderCtx renderParams{ renderer };
 
 	while (isRunning) {
 		long int ticks = SDL_GetPerformanceCounter();
@@ -126,7 +137,6 @@ int System::RunEngine() {
 			if (ivent.type == SDL_QUIT) {
 				isRunning = false;
 			}
-
 			//evbuf->push_back(ivent);
 			// execute input events
 			this->DoEvent(new input_event_args{ evbuf, ivent });
@@ -138,7 +148,8 @@ int System::RunEngine() {
 			//prev_step_start_ticks = SDL_GetPerformanceCounter();
 			//step_dt = (prev_step_start_ticks - prev_step_ticks) / (double)freq;
 
-			this->Step(step_dt, NULL);
+			// run step graph
+			this->OnStep(step_dt, NULL);
 			prev_step_ticks = SDL_GetPerformanceCounter();
 		}
 
@@ -147,9 +158,7 @@ int System::RunEngine() {
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 		SDL_RenderClear(renderer);
 
-		
 		// render back to front
-		//this->RenderGraph(&renderParams);
 		QueuedRender();
 		//DeferredRender();
 
@@ -161,6 +170,8 @@ int System::RunEngine() {
 		prev_ticks = ticks;
 		//SDL_Delay(16);
 	}
+
+	delete evbuf;
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -200,5 +211,5 @@ int System::InitEngine()
 
 Box System::GetWindowSize(std::string uId)
 {
-	return Box{ Vec2D{0, 0}, this->ScreenWidth, this->ScreenHeight };
+	return Box{ Vec2D{0, 0}, (float)this->ScreenWidth, (float)this->ScreenHeight };
 }

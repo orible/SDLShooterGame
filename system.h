@@ -2,8 +2,7 @@
 
 #include "engine.h"
 
-class System: public Node2D
-{
+DECLARE_NODE(System, Node2D)
 	SDL_Surface* winSurface = NULL;
 	SDL_Window* window = NULL;
 	SDL_Renderer* renderer = NULL;
@@ -16,16 +15,16 @@ class System: public Node2D
 	std::vector<Layer> *stack;
 private:
 	int RenderNode(Node * node, int depth);
-	int RenderNodeQueuedSortByZIndex(std::vector<Layer>* queue, Node* node, int depth);
+	void RenderNodeQueuedSortByZIndex(std::vector<Layer>* queue, Node* node, int depth);
 	int QueuedRender();
 	int DeferredRender();
 public:
-	RenderParams GetRenderParams();
+	RenderCtx GetRenderParams();
 	int RunEngine();
 	int InitEngine();
 	int ScreenHeight;
 	int ScreenWidth;
-	std::string CreatewWindow(std::string uId, int x, int y, bool fullscreen);
+	//std::string CreateWindow(std::string uId, int x, int y, bool fullscreen);
 	int ResizeWindow(std::string Uid, int x, int y, bool fullscreen);
 	Box GetWindowSize(std::string uId);
 };

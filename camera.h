@@ -12,15 +12,23 @@ DECLARE_NODE(Camera, Renderable)
 		NORMAL = 1 << 1
 	} mode;
 	float lerpSpeed = 1;
-	Vec2D target;
+	Vec2D target = Vec2D{ 0, 0 };
 public:
 	void MoveCamera(const Vec2D& v);
-	void MoveCameraTowardsSpringy(Vec2D target);
+	void MoveCameraTowardsSpringyWorld(Vec2D target);
 	glm::mat4 GetViewMatrix();
-	void Step(double dt, Node* parent);
+
+	// TODO: THIS FEELS CIRCULAR LOL
+	bool GetInFustrum(Renderable* r);
+
+	HOOK(void, OnStep, (double dt, Node* parent), (dt, parent));
+
+	//void Step(double dt, Node* parent);
 	void ZoomCamera(float scale);
-	void Render(SDL_Renderer* g);
-	Camera();
+	//void Render(SDL_Renderer* g);
+	//HOOK(void, Render, (SDL_Renderer* g), (g));
+	void OnCreated();
+	//Camera();
 };
 
 #endif // !CAMERA_H

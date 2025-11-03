@@ -3,17 +3,16 @@
 
 #include "engine.h"
 
-class MapImage: public Renderable
-{
-	CLASSNAME(MapImage);		
+DECLARE_NODE(MapImage, Renderable)
+	//CLASSNAME(MapImage);		
 	Sprite* mapImageSource;
 	std::vector<Sprite> chunks;
 	int chunkHeight;
 	int chunkWidth;
 
 public:
-	//static bool FromFile();
 	bool LoadMap(std::string path);
+	HOOK(void, OnAddedToTree, (Node* caller), (caller));
 };
 
 

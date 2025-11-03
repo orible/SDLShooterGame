@@ -3,7 +3,7 @@
 
 #include "engine.h"
 
-class DrawableSurface : public Renderable {
+DECLARE_NODE(DrawableSurface, Renderable)
 public:
 	struct TexPoint {
 		int x;
@@ -20,8 +20,8 @@ public:
 	void DoEvent(input_event_args* args);
 	void computeInputVectors(SDL_Event event);
 	void DrawThickLine(SDL_Renderer* renderer, float x1, float y1, float x2, float y2, int thickness);
-	void OnRender(RenderParams* p);
-	DrawableSurface();
+	HOOK(void, OnRender, (RenderCtx* p), (p));
+	HOOK(void, OnCreated, (), ());
 };
 
 #endif // !DRAWABLE_SURF_H

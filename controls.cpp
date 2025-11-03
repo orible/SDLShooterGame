@@ -26,6 +26,10 @@ Vec2D TextBox::RenderedBounds()
 {
 	return { (double)this->fwidth, (double)this->fheight };
 }
+void TextBox::SetPos(Vec2D v)
+{
+	this->localPos = v;
+}
 TextBox::TextBox(int align) : Renderable() {
 	this->localPos.x = 0;
 	this->localPos.y = 470;
@@ -34,7 +38,7 @@ TextBox::TextBox(int x, int y, int width, int height) : Renderable() {
 	this->localPos.x = x;
 	this->localPos.y = y;
 }
-void TextBox::OnRender(RenderParams* p)
+void TextBox::_OnRender(RenderCtx* p)
 {
 	if (this->dirty) {
 		if (this->tex != NULL) {
@@ -56,8 +60,8 @@ void TextBox::OnRender(RenderParams* p)
 		SDL_FreeSurface(surf);
 		this->dirty = false;
 	}
-	GetGlobalPositionTransform();
-	SDL_Rect rect{ this->globalPos.x, this->globalPos.y, fwidth, fheight };
+
+	SDL_Rect rect{ p0.x, p0.y, fwidth, fheight };
 	SDL_RenderCopy(p->g, tex, NULL, &rect);
 
 }

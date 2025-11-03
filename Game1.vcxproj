@@ -104,13 +104,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAVE_C99_VARARGS_MACROS;HAVE_STDLIB_H;HAVE_MATH_H;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include;packagesmanual\aubio-0.4.6-win64\include;packagesmanual\aubio\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include;packagesmanual\aubio-0.4.6-win64\include;packagesmanual\aubio\src;packages\glew-2.2.0\include\</AdditionalIncludeDirectories>
       <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;$(SolutionDir)\packages\glew-2.2.0\lib\Release\x64\glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -121,14 +121,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include;packagesmanual\aubio-0.4.6-win64\include;packagesmanual\aubio\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>packages\sdl2.nuget.2.30.9\build\native\include;packagesmanual\aubio-0.4.6-win64\include;packagesmanual\aubio\src;packages\glew-2.2.0\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2main.lib;$(SolutionDir)\packages\sdl2.nuget.2.30.9\build\native\lib\x64\SDL2.lib;$(SolutionDir)\packages\glew-2.2.0\lib\Release\x64\glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -222,6 +222,7 @@
     <None Include="cpp.hint" />
     <None Include="packages.config" />
     <None Include="packagesmanual\aubio\src\wscript_build" />
+    <None Include="Shader.dgsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\player.bmp">

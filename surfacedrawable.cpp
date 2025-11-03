@@ -97,10 +97,9 @@ void DrawableSurface::DrawThickLine(SDL_Renderer* renderer, float x1, float y1, 
 	SDL_DestroyTexture(lineTexture);
 }
 
-void DrawableSurface::OnRender(RenderParams* p)
+void DrawableSurface::_OnRender(RenderCtx* p)
 {
 	constructTexture(p->g);
-	GetGlobalPositionTransformWithCamera();
 
 	bool isDirty = queue.size() > 0;
 
@@ -125,16 +124,16 @@ void DrawableSurface::OnRender(RenderParams* p)
 	}
 	
 	SDL_Rect dest = { 
-		this->globalPos.x, 
-		this->globalPos.y, 
-		this->width + this->globalPos.x, 
-		this->height + this->globalPos.y
+		this->p0.x, 
+		this->p0.y, 
+		this->width + this->p0.x, 
+		this->height + this->p0.y
 	};
 	SDL_Rect src = { 0, 0, this->width, this->width};
 	SDL_RenderCopy(p->g, tex, &src, &dest);
 }
 
-DrawableSurface::DrawableSurface()
+void DrawableSurface::_OnCreated()
 {
 	this->width = 1000;
 	this->height = 1000;

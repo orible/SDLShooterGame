@@ -2,21 +2,16 @@
 #include <SDL.h>
 #include "engine.h"
 
-class Renderer: Node2D
-{
+DECLARE_NODE(Renderer, Node2D)
 	struct RenderLayer {
 		int index;
 		SDL_Texture* tex;
 	};
-
-	//unsigned int stack1_offset;
-
-	std::vector<RenderLayer>* stack1;
-	std::vector<RenderLayer>* stack2;
+	std::vector<RenderLayer>* stack1 = new std::vector<RenderLayer>();
+	std::vector<RenderLayer>* stack2 = new std::vector<RenderLayer>();
 private:
-	void Render(RenderParams* p, Node* node);
+	void Render(RenderCtx* p, Node* node);
 public:
-	void DeferredRender(RenderParams* p);
-	Renderer();
-};
+	void DeferredRender(RenderCtx* p);
+END_DECLARE_NODE();
 
