@@ -69,6 +69,7 @@ void Camera::ZoomCamera(float scale)
 
 void Camera::OnCreated()
 {
+	this->Id = 9999;
 	this->SetId("Camera");
 	this->mode = Mode::FOLLOW_TARGET_SPRING;
 	this->flags = Node2D::NodeFlags::NONE; //Node2D::NodeFlags::SKIP_TRANSFORM;

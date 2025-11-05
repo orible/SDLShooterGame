@@ -2,6 +2,7 @@
 #define H_MAPIMAGE_H
 
 #include "engine.h"
+#include "sprite.h"
 
 DECLARE_NODE(MapImage, Renderable)
 	//CLASSNAME(MapImage);		

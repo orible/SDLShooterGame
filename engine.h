@@ -30,6 +30,7 @@
 
 #define HOOK(RET, name, ARGS, call) \
     RET name ARGS override { \
+		/*printf("called  %s", #name);*/ \
         super::name call; \
         _##name call; \
     } \
@@ -152,6 +153,8 @@ DECLARE_BASE_NODE(Node)
 	std::string Id;
 	int uuid = GetUID();
 	int index = 0;
+	
+	std::vector<std::string>hooks;
 
 	//std::vector<std::unique_ptr<Node*>> children;
 	std::vector<Node*> children;
@@ -281,6 +284,7 @@ protected:
 	glm::vec2 rLocal;
 	glm::vec4 p0;
 public:
+	bool RenderTrap = false;
 	//void GetTransformMatrix();
 	glm::mat4 GetGlobalPositionTransformWithCamera();
 	virtual void OnRender(RenderCtx* p) {};
@@ -288,28 +292,6 @@ public:
 	// render entry DO NOT OVERRIDE
 	// if you want to add your own render logic, HOOK or overwrite OnRender
 	void Render(RenderCtx* p);
-};
-
-DECLARE_NODE(Sprite, Renderable)
-	//int width;
-	//int height;
-	SDL_Surface* surf;
-	SDL_Texture* texture;
-	std::string filename;
-public:
-	Sprite* CopyRegion(Box p);
-	void constructTexture(SDL_Renderer *p);
-	Box GetSpriteSize();
-	void SamplePoints(std::vector<Vec2D> *p); // RRGGBBAA
-	HOOK(void, OnStep, (double dt, Node* parent), (dt, parent));
-	HOOK(void, OnRender, (RenderCtx* p), (p));
-	void UpdateTextureInfo();
-	void Dispose();
-	static Sprite* FromDisk(std::string filename);
-};
-
-DECLARE_NODE(AnimatedSprite, Sprite)
-	std::map<std::string, Sprite*> animationTable;
 };
 
 DECLARE_NODE(Phys2D, Node2D)

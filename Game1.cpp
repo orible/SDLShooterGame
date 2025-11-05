@@ -56,13 +56,17 @@ int main(int argc, char* args[])
 	//a->SetLocalPos({ 100, 100 });
 	//nodeRoot->AddChild(a);
 
-	nodeRoot->AddChild(Node::New<MapImage>());
 
+	Sprite* a = Sprite::FromDisk("map/map_1.png");
+	a->SetLocalPos({ 0, 0 });
+	a->RenderTrap = true;
+	nodeRoot->AddChild(a);
+
+	nodeRoot->AddChild(Node::New<MapImage>());
 	nodeRoot->AddChild(Node::New<Actor>());
 	nodeRoot->RunEngine();
 	nodeRoot->Dispose();
-	
-	//nodeRoot->AddChild(Sprite::FromDisk("./player.bmp"));
+
 	//nodeRoot->AddChild(Sprite::FromDisk("./player.bmp"));
 
 	delete nodeRoot;

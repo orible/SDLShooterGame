@@ -31,6 +31,9 @@
     <Filter Include="Source Files\objects">
       <UniqueIdentifier>{d9494e24-d65d-4784-be59-92b8acb1ab8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\engine">
+      <UniqueIdentifier>{1ed50499-6694-4292-9c31-4144f2ac7993}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game1.cpp">
@@ -288,6 +291,9 @@
     <ClCompile Include="actor.cpp">
       <Filter>Source Files\objects</Filter>
     </ClCompile>
+    <ClCompile Include="sprite.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -305,15 +311,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="soundlistener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="system.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="packagesmanual\aubio\src\aubio.h">
       <Filter>aubio</Filter>
     </ClInclude>
@@ -500,32 +497,44 @@
     <ClInclude Include="packagesmanual\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="mapimage.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="camera.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="controls.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="sprite.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="surfacedrawable.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="system.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="hud.h">
+      <Filter>Source Files\hud</Filter>
     </ClInclude>
     <ClInclude Include="Game1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="controls.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="surfacedrawable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="actor.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\objects</Filter>
     </ClInclude>
-    <ClInclude Include="hud.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="mapimage.h">
+      <Filter>Source Files\objects</Filter>
     </ClInclude>
-    <ClInclude Include="renderer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="soundlistener.h">
+      <Filter>Source Files\objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

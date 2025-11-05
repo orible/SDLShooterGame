@@ -30,6 +30,7 @@ void HUD::_OnAddedToTree(Node * caller) {
 
 void HUD::_OnCreated()
 {
+	this->index = 9999;
 	this->AddChild(this->perfInfo);
 	this->AddChild(this->debugInfo);
 	this->AddChild(this->inputInfo);

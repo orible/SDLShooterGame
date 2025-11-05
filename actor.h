@@ -2,6 +2,8 @@
 #define H_ACTOR
 #include "engine.h"
 #include "controls.h"
+#include "sprite.h"
+
 // engine.h: This file contains the 'main' function. Program execution begins and ends there.
 //
 DECLARE_NODE(Actor, Phys2D)

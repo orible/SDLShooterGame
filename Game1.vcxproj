@@ -215,6 +215,7 @@
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="soundlistener.cpp" />
+    <ClCompile Include="sprite.cpp" />
     <ClCompile Include="surfacedrawable.cpp" />
     <ClCompile Include="system.cpp" />
   </ItemGroup>
@@ -305,6 +306,7 @@
     <ClInclude Include="renderer.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="soundlistener.h" />
+    <ClInclude Include="sprite.h" />
     <ClInclude Include="surfacedrawable.h" />
     <ClInclude Include="system.h" />
   </ItemGroup>

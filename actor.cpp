@@ -4,6 +4,7 @@
 #include "hud.h"
 #include "surfacedrawable.h"
 #include "camera.h"
+#include "sprite.h"
 
 bool Actor::computeInputVectors(SDL_Event event) {
 	switch (event.type) {

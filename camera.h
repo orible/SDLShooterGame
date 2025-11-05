@@ -11,7 +11,7 @@ DECLARE_NODE(Camera, Renderable)
 		FOLLOW_TARGET_SPRING = 1 << 0,
 		NORMAL = 1 << 1
 	} mode;
-	float lerpSpeed = 1;
+	float lerpSpeed = 5;
 	Vec2D target = Vec2D{ 0, 0 };
 public:
 	void MoveCamera(const Vec2D& v);

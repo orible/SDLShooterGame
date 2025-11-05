@@ -42,7 +42,7 @@ int System::RenderNode(Node* node, int d)
 // collate draw queue of renderable items that need to be drawn!
 void System::RenderNodeQueuedSortByZIndex(std::vector<Layer> *queue, Node *node, int depth) {
 	printspaces(depth);
-	printf("> NODE (Cls: %s) (Id: %s)\n", node->ClassName(), node->Id.c_str());
+	//printf("> NODE (Cls: %s) (Id: %s)\n", node->ClassName(), node->Id.c_str());
 
 	// get is renderable node with draw logic
 	// if it is we add it to the render cue to run the render logic
@@ -55,7 +55,7 @@ void System::RenderNodeQueuedSortByZIndex(std::vector<Layer> *queue, Node *node,
 }
 
 int System::QueuedRender() {
-	printf("========\nRender Start\n========\n");
+	//printf("========\nRender Start\n========\n");
 	std::vector<Layer> queue = {};
 	RenderNodeQueuedSortByZIndex(&queue, this, 0);
 	
@@ -76,7 +76,7 @@ int System::QueuedRender() {
 		glm::scale(glm::mat4(1), { pixelsPerUnit, pixelsPerUnit, 1 }); // Y down
 
 	// front to back of sorted render queue, call render function
-	for (std::vector<Layer>::iterator it = queue.begin(); it != queue.end(); ++it) {
+	for (std::vector<Layer>::iterator it = queue.begin(); it != queue.end(); it++) {
 		// get renderable node
 		Renderable *r = (Renderable*)it->node;
 		
@@ -90,7 +90,7 @@ int System::QueuedRender() {
 }
 int System::DeferredRender()
 {
-	printf("========\nRender Start\n========\n");
+	//printf("========\nRender Start\n========\n");
 	this->RenderNode(this, 0);
 
 	return 0;
